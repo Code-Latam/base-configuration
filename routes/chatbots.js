@@ -14,7 +14,6 @@ router.post("/register", async (req, res) => {
     const newChatbot = new Chatbot({
     chatbotKey: hashedchatbotKey,
     openaiKey: hashedopenaiKey,
-    verifySign:  req.body.verifySign,
     name:  req.body.name,
     email:  req.body.email,
     public:  req.body.public,
@@ -36,21 +35,35 @@ router.post("/register", async (req, res) => {
 
 // Get base config info for a chatbot
 
+// Get base config info for one chatbot
 router.post("/query", async (req, res) => {
   const chatbotKey = req.body.chatbotKey;
   const name = req.body.name;
   try {
-    const chatbot = chatbotKey
-      ? await Chatbot.findOne({chatbotKey: chatbotKey})
-      : await Chatbot.findOne({ name: name });
+    const chatbot = await Chatbot.findOne(({ $or: [{ chatbotKey: chatbotKey }, { name: name }] }))
     const { password, updatedAt, ...other } = chatbot._doc;
     res.status(200).json(other);
-  } catch (err) {
+  } 
+  catch (err) {
     res.status(500).json(err);
   }
 });
 
-//delete user
+// Get base config info for all chatbot
+router.post("/queryall", async (req, res) => {
+  
+  try {
+    const chatbots = await Chatbot.find();
+    res.status(200).json(chatbots);
+  } 
+  catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+
+
+//delete chatbot
 router.post("/delete", async (req, res) => {
   const name = req.body.name;
     try {

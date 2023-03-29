@@ -12,10 +12,6 @@ const ChatbotSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    verifySign: {
-      type: String,
-      required: true,
-    },
     name: {
       type: String,
       required: true,
