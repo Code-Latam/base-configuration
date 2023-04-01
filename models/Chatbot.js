@@ -12,6 +12,10 @@ const ChatbotSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    isAdminModule: {
+      type: Boolean,
+      default: true,
+    },
     name: {
       type: String,
       required: true,

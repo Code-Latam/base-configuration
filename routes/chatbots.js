@@ -67,7 +67,7 @@ router.post("/queryall", async (req, res) => {
 router.post("/delete", async (req, res) => {
   const name = req.body.name;
     try {
-      await User.findOneAndDelete({ name: name });
+      await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
       res.status(200).json("Account has been deleted");
     } catch (err) {
       return res.status(500).json(err);
@@ -78,6 +78,7 @@ router.post("/delete", async (req, res) => {
   //update chatbot
 router.post("/update", async (req, res) => {
   const name = req.body.name;
+  const oldchatbotkey = req.body.chatbotKey;
     if (req.body.chatbotKey) {
       try {
         const salt = await bcrypt.genSalt(10);
@@ -95,10 +96,9 @@ router.post("/update", async (req, res) => {
       }
     }
 
-
-
     try {
-      const chatbot = await Chatbot.findOneAndUpdate({ name: name }, {
+      
+      const chatbot = await Chatbot.findOneAndUpdate({ $and: [{ chatbotKey: oldchatbotkey }, { name: name }] }, {
         $set: req.body,
       });
       res.status(200).json("Account has been updated");
