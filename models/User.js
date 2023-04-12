@@ -6,20 +6,21 @@ const UserSchema = new mongoose.Schema(
     chatbotKey: {
       type: String,
       required: true,
-      unique: true,
     },
     username: {
       type: String,
-      require: true,
+      required: true,
       min: 3,
       max: 20,
-      unique: true,
+    },
+    profilePicture: {
+      type: String,
+      default: "",
     },
     email: {
       type: String,
       required: true,
       max: 50,
-      unique: true,
     },
     password: {
       type: String,
@@ -37,5 +38,7 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+UserSchema.index({chatbotKey: 1, email: 1}, {unique: true});
 
 module.exports = mongoose.model("User", UserSchema);

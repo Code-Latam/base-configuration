@@ -4,17 +4,12 @@ const ChatbotSchema = new mongoose.Schema(
   {
     chatbotKey: {
       type: String,
-      required: true,
       unique: true,
     },
     openaiKey: {
       type: String,
       required: true,
       unique: true,
-    },
-    isAdminModule: {
-      type: Boolean,
-      default: true,
     },
     name: {
       type: String,
@@ -33,9 +28,8 @@ const ChatbotSchema = new mongoose.Schema(
       type: String,
       required: true,
       max: 50,
-      unique: true,
     },
-    public: {
+    publicbot: {
       type: Boolean,
       default: true,
     },
@@ -46,6 +40,14 @@ const ChatbotSchema = new mongoose.Schema(
     enabled: {
       type: Boolean,
       default: false,
+    },
+    isAdminModule: {
+      type: Boolean,
+      default: false,
+    },
+    chatbotMaster: {
+      type: String,
+      required: false,
     },
     promptTemplate: {
       type: String,

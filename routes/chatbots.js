@@ -4,21 +4,27 @@ const bcrypt = require("bcrypt");
 
 //REGISTER
 router.post("/register", async (req, res) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
-  const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
+  // const salt = await bcrypt.genSalt(10);
+  // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
+  // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
 
   try {
     //create new Chatbot using chatbot model
-
+  const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+  if (!chatbotmaster)
+   {res.status(401).json("chatbotmaster has no rights to create, maintain or query chatbots")}
+  else
+  {
     const newChatbot = new Chatbot({
-    chatbotKey: hashedchatbotKey,
-    openaiKey: hashedopenaiKey,
+    chatbotKey: req.body.chatbotKey,
+    openaiKey: req.body.openaiKey,
     name:  req.body.name,
     email:  req.body.email,
-    public:  req.body.public,
+    publicbot:  req.body.publicbot,
     paid:  req.body.paid,
     enabled:  req.body.enabled,
+    idAdminModule: req.body.isAdminmodule,
+    chatbotMaster: req.body.chatbotMaster,
     promptTemplate:  req.body.promptTemplate,
     idEnroller:  req.body.idEnroller,
     });
@@ -28,6 +34,7 @@ router.post("/register", async (req, res) => {
     //save chatbot and respond
     const chatbot = await newChatbot.save();
     res.status(200).json(chatbot);
+  }
   } catch (err) {
     res.status(500).json(err)
   }
@@ -37,15 +44,29 @@ router.post("/register", async (req, res) => {
 
 // Get base config info for one chatbot
 router.post("/query", async (req, res) => {
-  const chatbotKey = req.body.chatbotKey;
-  const name = req.body.name;
   try {
-    const chatbot = await Chatbot.findOne(({ $or: [{ chatbotKey: chatbotKey }, { name: name }] }))
+    const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+    if (!chatbotmaster)
+      {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+    else
+    {
+    const chatbot = await Chatbot.findOne({
+      $and: [
+        {
+          $or: [
+            { chatbotKey: req.body.chatbotKey },
+            { name: req.body.name }
+          ]
+        },
+        { chatbotMaster: req.body.chatbotMaster }
+      ]
+    })
     const { password, updatedAt, ...other } = chatbot._doc;
     res.status(200).json(other);
+    }
   } 
   catch (err) {
-    res.status(500).json(err);
+  res.status(500).json(err);
   }
 });
 
@@ -53,8 +74,14 @@ router.post("/query", async (req, res) => {
 router.post("/queryall", async (req, res) => {
   
   try {
-    const chatbots = await Chatbot.find();
+    const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+    if (!chatbotMaster)
+      {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+    else
+    {
+    const chatbots = await Chatbot.find({chatbotMaster:req.body.chatbotMaster});
     res.status(200).json(chatbots);
+    }
   } 
   catch (err) {
     res.status(500).json(err);
@@ -67,8 +94,16 @@ router.post("/queryall", async (req, res) => {
 router.post("/delete", async (req, res) => {
   const name = req.body.name;
     try {
-      await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
-      res.status(200).json("Account has been deleted");
+
+      const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      if (!chatbotmaster)
+        {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+      else
+      {
+      const mychatbot = await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
+      if (mychatbot) {res.status(200).json("Chatbot has been deleted")}
+      else { res.status(404).json("Chatbot has not been deleted. Not found. Please check name and chatbotkey.") }
+      }
     } catch (err) {
       return res.status(500).json(err);
     }
@@ -77,31 +112,19 @@ router.post("/delete", async (req, res) => {
  
   //update chatbot
 router.post("/update", async (req, res) => {
-  const name = req.body.name;
-  const oldchatbotkey = req.body.chatbotKey;
-    if (req.body.chatbotKey) {
-      try {
-        const salt = await bcrypt.genSalt(10);
-        req.body.chatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
-      } catch (err) {
-        return res.status(500).json(err);
-      }
-    }
-    if (req.body.openaiKey) {
-      try {
-        const salt = await bcrypt.genSalt(10);
-        req.body.openaiKey = await bcrypt.hash(req.body.openaiKey, salt);
-      } catch (err) {
-        return res.status(500).json(err);
-      }
-    }
 
     try {
-      
-      const chatbot = await Chatbot.findOneAndUpdate({ $and: [{ chatbotKey: oldchatbotkey }, { name: name }] }, {
+      const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      if (!chatbotMaster)
+        {res.status(401).json("caller has no rights to create, maintain or query chatbots")}
+      else
+      {
+      const mychatbot = await Chatbot.findOneAndUpdate({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: req.body.name }] }, {
         $set: req.body,
       });
-      res.status(200).json("Account has been updated");
+      if (mychatbot) {res.status(200).json("Account has been updated")}
+      else { res.status(404).json("Account has not been updated. Not found. Please check chatbotKey and name") }
+    }
     } catch (err) {
       return res.status(500).json(err);
     }

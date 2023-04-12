@@ -3,57 +3,67 @@ const router = require("express").Router();
 const bcrypt = require("bcrypt");
 
 //update user
-router.put("/:id", async (req, res) => {
-  if (req.body.userId === req.params.id || req.body.isAdmin) {
-    if (req.body.password) {
-      try {
-        const salt = await bcrypt.genSalt(10);
-        req.body.password = await bcrypt.hash(req.body.password, salt);
-      } catch (err) {
-        return res.status(500).json(err);
-      }
-    }
-    try {
-      const user = await User.findByIdAndUpdate(req.params.id, {
-        $set: req.body,
-      });
-      res.status(200).json("Account has been updated");
-    } catch (err) {
-      return res.status(500).json(err);
-    }
-  } else {
-    return res.status(403).json("You can update only your account!");
-  }
-});
-
-//delete user
-router.delete("/:id", async (req, res) => {
-  if (req.body.userId === req.params.id || req.body.isAdmin) {
-    try {
-      await User.findByIdAndDelete(req.params.id);
-      res.status(200).json("Account has been deleted");
-    } catch (err) {
-      return res.status(500).json(err);
-    }
-  } else {
-    return res.status(403).json("You can delete only your account!");
-  }
-});
-
-//get a user
-router.get("/", async (req, res) => {
-  const userId = req.query.userId;
-  const username = req.query.username;
+router.post("/update", async (req, res) => {
   try {
-    const user = userId
-      ? await User.findById(userId)
-      : await User.findOne({ username: username });
-    const { somenonsense1, somenonsense2, ...other } = user._doc;
-    res.status(200).json(other);
+    const salt = await bcrypt.genSalt(10);
+    req.body.password = await bcrypt.hash(req.body.password, salt);
+    const user = await User.findOneAndUpdate({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] }, {
+    $set: req.body});
+    if (!user) {res.status(404).json("User has not been updated. Not found!")}
+    else { res.status(200).json("User has been updated.") }
   } catch (err) {
     res.status(500).json(err);
   }
+} );
+
+//delete user
+router.post("/delete", async (req, res) => 
+{
+   try {
+    var user = await User.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
+    if (!user)
+    {
+    res.status(404).json("user not found and not deleted");
+    }
+    else
+    {
+      res.status(200).json("user has been deleted");
+    }
+   }
+  catch (err) {
+      return res.status(500).json(err);
+    }
 });
+
+// Get user one user
+router.post("/query", async (req, res) => {
+  try {
+    
+    const users = await User.findOne({ chatbotKey: req.body.chatbotKey, username: req.body.username });
+    if (!users) {res.status(404).json("No user found for this chatbot and name combination")}
+    else {res.status(200).json(users) }
+    }
+    catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+
+// Get all users for a chatbot
+router.post("/queryall", async (req, res) => {
+  try {
+    
+    const users = await User.find({ chatbotKey: req.body.chatbotKey });
+    if (!users) {res.status(404).json("No users found for this chatbot")}
+    else {res.status(200).json(users) }
+    }
+    catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+
+
 
 //get friends
 router.get("/friends/:userId", async (req, res) => {
