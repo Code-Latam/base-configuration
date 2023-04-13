@@ -2,6 +2,15 @@ const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const bcrypt = require("bcrypt");
 
+
+function isValidname(value) {
+  // Use a regular expression to test if the value matches the pattern
+  // The pattern is: start with a letter or number, followed by zero or more letters or numbers, and end with a letter or number
+  // The flag i means case-insensitive
+  let pattern = /^[a-z0-9][a-z0-9]*[a-z0-9]$/;
+  return pattern.test(value);
+}
+
 //REGISTER
 router.post("/register", async (req, res) => {
   // const salt = await bcrypt.genSalt(10);
@@ -12,9 +21,17 @@ router.post("/register", async (req, res) => {
     //create new Chatbot using chatbot model
   const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
   if (!chatbotmaster)
-   {res.status(401).json("chatbotmaster has no rights to create, maintain or query chatbots")}
-  else
-  {
+   {
+    res.status(401).json("chatbotmaster has no rights to create, maintain or query chatbots");
+    return
+   }
+   if (!isValidname(req.body.name))
+    {
+      res.status(401).json("chatbot not registered. Chatbot name can only contain lowercase letters, numbers and no spaces.");
+      return
+    }
+    
+   
     const newChatbot = new Chatbot({
     chatbotKey: req.body.chatbotKey,
     openaiKey: req.body.openaiKey,
@@ -29,14 +46,11 @@ router.post("/register", async (req, res) => {
     idEnroller:  req.body.idEnroller,
     });
 
-    
-
     //save chatbot and respond
     const chatbot = await newChatbot.save();
     res.status(200).json(chatbot);
-  }
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
