@@ -1,6 +1,11 @@
 const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const bcrypt = require("bcrypt");
+var {ChromaClient} = require('chromadb');
+var {OpenAIEmbeddingFunction} = require('chromadb');
+const fs = require('fs')
+
+
 
 
 function isValidname(value) {
@@ -16,6 +21,8 @@ router.post("/register", async (req, res) => {
   // const salt = await bcrypt.genSalt(10);
   // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
   // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
+  
+
 
   try {
     //create new Chatbot using chatbot model
@@ -48,9 +55,16 @@ router.post("/register", async (req, res) => {
 
     //save chatbot and respond
     const chatbot = await newChatbot.save();
+
+    // create collection in Croma
+    const chroma_client = new ChromaClient();
+    const embedder = new OpenAIEmbeddingFunction(req.body.openaiKey); 
+    const collection = await chroma_client.createCollection(req.body.name, {}, embedder);
+
     res.status(200).json(chatbot);
   } catch (err) {
-    res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(500).json(err)
+    // res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
@@ -115,7 +129,12 @@ router.post("/delete", async (req, res) => {
       else
       {
       const mychatbot = await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
-      if (mychatbot) {res.status(200).json("Chatbot has been deleted")}
+      if (mychatbot) 
+      {
+        const chroma_client = new ChromaClient();
+        await chroma_client.deleteCollection(req.body.name);
+        res.status(200).json("Chatbot has been deleted")
+      }
       else { res.status(404).json("Chatbot has not been deleted. Not found. Please check name and chatbotkey.") }
       }
     } catch (err) {
