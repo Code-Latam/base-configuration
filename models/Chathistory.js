@@ -10,6 +10,7 @@ const ChathistorySchema = new mongoose.Schema(
     chatRequestResult: {
       type: String, enum: ['FOUND', 'NOT FOUND'],
       require: true,
+      default: 'FOUND',
     },
     prompt: {
       type: String,

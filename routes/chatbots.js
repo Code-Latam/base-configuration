@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
+const User = require("../models/User");
 const bcrypt = require("bcrypt");
 var {ChromaClient} = require('chromadb');
 var {OpenAIEmbeddingFunction} = require('chromadb');
@@ -42,8 +43,10 @@ router.post("/register", async (req, res) => {
     const newChatbot = new Chatbot({
     chatbotKey: req.body.chatbotKey,
     openaiKey: req.body.openaiKey,
+    descriptiveName:  req.body.descriptiveName,
     name:  req.body.name,
     email:  req.body.email,
+    initialPassword: req.body.initialPassword,
     publicbot:  req.body.publicbot,
     paid:  req.body.paid,
     enabled:  req.body.enabled,
@@ -53,8 +56,24 @@ router.post("/register", async (req, res) => {
     idEnroller:  req.body.idEnroller,
     });
 
-    //save chatbot and respond
+    //save chatbot and
     const chatbot = await newChatbot.save();
+
+    // Create one user for the chatbot
+    const salt = await bcrypt.genSalt(10);
+    const hashedpassword = await bcrypt.hash(req.body.initialPassword, salt);
+
+    const newUser = new User({
+      chatbotKey: req.body.chatbotKey,
+      username: "Admin",
+      email:  req.body.email,
+      password:  hashedpassword,
+      isAdmin:  true,
+      });
+    console.log(newUser)
+    // save new user
+      const newuser = await newUser.save();
+    console.log(newuser);
 
     // create collection in Croma
     const chroma_client = new ChromaClient();
@@ -131,6 +150,8 @@ router.post("/delete", async (req, res) => {
       const mychatbot = await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
       if (mychatbot) 
       {
+        // delete users asociated with the chatbot
+        await User.deleteMany({chatbotKey: req.body.chatbotKey});
         const chroma_client = new ChromaClient();
         await chroma_client.deleteCollection(req.body.name);
         res.status(200).json("Chatbot has been deleted")

@@ -11,6 +11,11 @@ const ChatbotSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    descriptiveName: {
+      type: String,
+      required: true,
+      unique: false,
+    },
     name: {
       type: String,
       required: true,
@@ -25,6 +30,11 @@ const ChatbotSchema = new mongoose.Schema(
       }
     },
     email: {
+      type: String,
+      required: true,
+      max: 50,
+    },
+    initialPassword: {
       type: String,
       required: true,
       max: 50,

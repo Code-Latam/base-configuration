@@ -10,6 +10,7 @@ const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
 const chatbotRoute = require("./routes/chatbots");
 const chathistoryRoute = require("./routes/chathistory");
+const chatRoute = require("./routes/chat");
 const router = express.Router();
 const path = require("path");
 
@@ -56,6 +57,7 @@ app.use("/api/chatbots", chatbotRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/chathistory", chathistoryRoute);
+app.use("/api/chat", chatRoute);
 
 app.listen(8800, () => {
   console.log("Backend server is running on port 8800!");
