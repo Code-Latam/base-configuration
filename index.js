@@ -6,6 +6,15 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const multer = require("multer");
 
+const cors = require('cors');
+
+// allow any origin
+const corsOptions = {
+  origin: '*',
+  credentials: true,
+  optionSuccessStatus: 200
+}
+
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
 const chatbotRoute = require("./routes/chatbots");
@@ -34,6 +43,7 @@ app.use("/images", express.static(path.join(__dirname, "public/images")));
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
+app.use(cors(corsOptions));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
