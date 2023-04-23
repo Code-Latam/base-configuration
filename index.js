@@ -18,10 +18,10 @@ dotenv.config();
 console.log(process.env.MONGO_URL);
 mongoose.set("strictQuery", true);
 
-// MONGO_URL = mongodb+srv://myuser-01:Peluche01@Cluster0.jt0hbqx.mongodb.net/sample-guides?retryWrites=true&w=majority
-
+MONGO_URL = process.env.MONGO_URL
+// MONGO_URL = "mongodb://stevenb:Peluche01@ac-yhcnfkb-shard-00-00.jt0hbqx.mongodb.net:27017,ac-yhcnfkb-shard-00-01.jt0hbqx.mongodb.net:27017,ac-yhcnfkb-shard-00-02.jt0hbqx.mongodb.net:27017/?ssl=true&replicaSet=atlas-vrrym6-shard-0&authSource=admin&retryWrites=true&w=majority"
 mongoose.connect(
-  process.env.MONGO_URL,
+  MONGO_URL,
   (error) => {
     if (error) console.log(error);
     console.log("Connected to MongoDB");

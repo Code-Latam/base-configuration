@@ -22,6 +22,8 @@ router.post("/register", async (req, res) => {
   // const salt = await bcrypt.genSalt(10);
   // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
   // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
+
+  const CHROMA_URL = process.env.CHROMA_URL ;
   
 
 
@@ -76,7 +78,7 @@ router.post("/register", async (req, res) => {
     console.log(newuser);
 
     // create collection in Croma
-    const chroma_client = new ChromaClient();
+    const chroma_client = new ChromaClient(CHROMA_URL);
     const embedder = new OpenAIEmbeddingFunction(req.body.openaiKey); 
     const collection = await chroma_client.createCollection(req.body.name, {}, embedder);
 
@@ -139,6 +141,7 @@ router.post("/queryall", async (req, res) => {
 
 //delete chatbot
 router.post("/delete", async (req, res) => {
+  const CHROMA_URL = process.env.CHROMA_URL ;
   const name = req.body.name;
     try {
 
@@ -152,7 +155,7 @@ router.post("/delete", async (req, res) => {
       {
         // delete users asociated with the chatbot
         await User.deleteMany({chatbotKey: req.body.chatbotKey});
-        const chroma_client = new ChromaClient();
+        const chroma_client = new ChromaClient(CHROMA_URL);
         await chroma_client.deleteCollection(req.body.name);
         res.status(200).json("Chatbot has been deleted")
       }
