@@ -69,6 +69,9 @@ app.use("/api/users", userRoute);
 app.use("/api/chathistory", chathistoryRoute);
 app.use("/api/chat", chatRoute);
 
-app.listen(8800, () => {
-  console.log("Backend server is running on port 8800!");
+
+const port = process.env.PORT || 8800
+
+app.listen(port, () => {
+  console.log("Backend server is running on port " + port);
 });
