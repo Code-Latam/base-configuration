@@ -188,6 +188,14 @@ router.post("/update", async (req, res) => {
   } );
 
 
+   //update chatbot
+router.post("/test", async (req, res) => {
+  res.status(200).json("test is ok. Apis do arrive")
+  }
+ );
+
+
+
 
 
 module.exports = router;
