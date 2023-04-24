@@ -20,6 +20,9 @@ const authRoute = require("./routes/auth");
 const chatbotRoute = require("./routes/chatbots");
 const chathistoryRoute = require("./routes/chathistory");
 const chatRoute = require("./routes/chat");
+const clientsRoute = require("./routes/clients");
+
+
 const router = express.Router();
 const path = require("path");
 
@@ -27,7 +30,7 @@ dotenv.config();
 console.log(process.env.MONGO_URL);
 mongoose.set("strictQuery", true);
 
-MONGO_URL = process.env.MONGO_URL
+const MONGO_URL = process.env.MONGO_URL
 // MONGO_URL = "mongodb://stevenb:Peluche01@ac-yhcnfkb-shard-00-00.jt0hbqx.mongodb.net:27017,ac-yhcnfkb-shard-00-01.jt0hbqx.mongodb.net:27017,ac-yhcnfkb-shard-00-02.jt0hbqx.mongodb.net:27017/?ssl=true&replicaSet=atlas-vrrym6-shard-0&authSource=admin&retryWrites=true&w=majority"
 mongoose.connect(
   MONGO_URL,
@@ -68,6 +71,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/chathistory", chathistoryRoute);
 app.use("/api/chat", chatRoute);
+app.use("/api/clients", clientsRoute);
 
 
 const port = process.env.PORT || 8800

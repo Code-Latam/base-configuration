@@ -4,6 +4,12 @@ const bcrypt = require("bcrypt");
 
 //update user
 router.post("/update", async (req, res) => {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   try {
     const salt = await bcrypt.genSalt(10);
     req.body.password = await bcrypt.hash(req.body.password, salt);
@@ -19,6 +25,12 @@ router.post("/update", async (req, res) => {
 //delete user
 router.post("/delete", async (req, res) => 
 {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
    try {
     var user = await User.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
     if (!user)
@@ -37,6 +49,12 @@ router.post("/delete", async (req, res) =>
 
 // Get user one user
 router.post("/query", async (req, res) => {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   try {
     
     const users = await User.findOne({ chatbotKey: req.body.chatbotKey, username: req.body.username });
@@ -51,6 +69,12 @@ router.post("/query", async (req, res) => {
 
 // Get all users for a chatbot
 router.post("/queryall", async (req, res) => {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   try {
     
     const users = await User.find({ chatbotKey: req.body.chatbotKey });

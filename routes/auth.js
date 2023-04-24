@@ -5,6 +5,12 @@ const bcrypt = require("bcrypt");
 
 //REGISTER New USER
 router.post("/register", async (req, res) => {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   try 
   {
     //generate new password
@@ -38,6 +44,12 @@ router.post("/register", async (req, res) => {
 
 //LOGIN
 router.post("/login", async (req, res) => {
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   try {
     // find the user based on the email and the chatbotkey
     const user = await User.findOne({ $and: [ {chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });

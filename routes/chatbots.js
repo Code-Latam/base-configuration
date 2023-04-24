@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const User = require("../models/User");
+const Client = require("../models/Client");
 const bcrypt = require("bcrypt");
 var {ChromaClient} = require('chromadb');
 var {OpenAIEmbeddingFunction} = require('chromadb');
@@ -28,7 +29,14 @@ router.post("/register", async (req, res) => {
 
 
   try {
-    //create new Chatbot using chatbot model
+
+    const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
+    
   const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
   if (!chatbotmaster)
    {
@@ -41,8 +49,10 @@ router.post("/register", async (req, res) => {
       return
     }
     
-   
+   //create new Chatbot using chatbot model
+
     const newChatbot = new Chatbot({
+    clientNr: req.body.clientNr,
     chatbotKey: req.body.chatbotKey,
     openaiKey: req.body.openaiKey,
     descriptiveName:  req.body.descriptiveName,
@@ -93,6 +103,14 @@ router.post("/register", async (req, res) => {
 
 // Get base config info for one chatbot
 router.post("/query", async (req, res) => {
+
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
+
   try {
     const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
     if (!chatbotmaster)
@@ -121,6 +139,13 @@ router.post("/query", async (req, res) => {
 
 // Get base config info for all chatbot
 router.post("/queryall", async (req, res) => {
+
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
   
   try {
     const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
@@ -143,6 +168,13 @@ router.post("/queryall", async (req, res) => {
 router.post("/delete", async (req, res) => {
   const CHROMA_URL = process.env.CHROMA_URL ;
   const name = req.body.name;
+
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
     try {
 
       const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
@@ -169,6 +201,13 @@ router.post("/delete", async (req, res) => {
  
   //update chatbot
 router.post("/update", async (req, res) => {
+
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+    if (!client)
+     {
+      res.status(401).json("client number does not exist");
+      return
+     }  
 
     try {
       const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
