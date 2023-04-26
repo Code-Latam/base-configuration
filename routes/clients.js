@@ -24,6 +24,10 @@ router.post("/update", async (req, res) => {
   try {
     const salt = await bcrypt.genSalt(10);
     req.body.password = await bcrypt.hash(req.body.password, salt);
+
+    const salt2 = await bcrypt.genSalt(10);
+    req.body.clientToken = await bcrypt.hash(req.body.clientToken, salt);
+
     const client = await Client.findOneAndUpdate({ clientNr: req.body.clientNr }, {
     $set: req.body});
     if (!client) {res.status(404).json("Client has not been updated. Not found!")}
@@ -129,9 +133,12 @@ router.post("/register", async (req, res) => {
   res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
   return
   }
-  // const salt = await bcrypt.genSalt(10);
-  // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
-  // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
+  const salt = await bcrypt.genSalt(10);
+  const hashedpassword = await bcrypt.hash(req.body.password, salt);
+
+  const salt2 = await bcrypt.genSalt(10);
+  const hashedclienttoken = await bcrypt.hash(req.body.clientToken, salt);
+  
 
   
   const SECRET_KEY = process.env.SECRET_KEY ;
@@ -148,10 +155,10 @@ router.post("/register", async (req, res) => {
 
     const newClient = new Client({
     clientNr: req.body.clientNr,
-    clientToken: req.body.clientToken,
+    clientToken: hashedclienttoken,
     clientname: req.body.clientname,
     email:  req.body.email,
-    password:  req.body.password
+    password:  hashedpassword
     });
 
     //save chatbot and

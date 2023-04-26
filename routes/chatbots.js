@@ -179,6 +179,32 @@ if (!utils.gwokenCorrect(req.body, req.body.gwoken))
 });
 
 
+// Get all chatbots by client!
+router.post("/queryallbyclient", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+    return
+  }
+  
+    const client = await Client.findOne({ clientNr: req.body.clientNr })
+      if (!client)
+       {
+        res.status(401).json("client number does not exist");
+        return
+       }  
+    
+    try {
+      
+      const chatbots = await Chatbot.find({clientNr:req.body.clientNr});
+      res.status(200).json(chatbots);
+      } 
+    catch (err) {
+      res.status(500).json("An internal server error ocurred. Please check your fields")
+    }
+  });
+
 
 //delete chatbot
 router.post("/delete", async (req, res) => {
