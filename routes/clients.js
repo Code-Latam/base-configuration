@@ -1,4 +1,5 @@
 const Client = require("../models/Client");
+const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 
@@ -8,6 +9,12 @@ const dotenv = require("dotenv");
 
 //update client
 router.post("/update", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const SECRET_KEY = process.env.SECRET_KEY
   if (req.body.secretKey!= SECRET_KEY)
     { 
@@ -22,13 +29,18 @@ router.post("/update", async (req, res) => {
     if (!client) {res.status(404).json("Client has not been updated. Not found!")}
     else { res.status(200).json("Client has been updated.") }
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 } );
 
 //delete client
-router.post("/delete", async (req, res) => 
-{
+router.post("/delete", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -48,12 +60,18 @@ router.post("/delete", async (req, res) =>
     }
    }
   catch (err) {
-      return res.status(500).json(err);
+    res.status(500).json("An internal server error ocurred. Please check your fields")
     }
 });
 
 // Get client one client
 router.post("/query", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -67,13 +85,19 @@ router.post("/query", async (req, res) => {
     else {res.status(200).json(client) }
     }
     catch (err) {
-    res.status(500).json(err);
+      res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
 
 // Get all clients
 router.post("/queryall", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -92,13 +116,19 @@ router.post("/queryall", async (req, res) => {
     else {res.status(200).json(clients) }
     }
     catch (err) {
-    res.status(500).json(err);
+      res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
 
 
 router.post("/register", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   // const salt = await bcrypt.genSalt(10);
   // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
   // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);

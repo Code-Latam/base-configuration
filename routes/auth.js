@@ -1,12 +1,19 @@
 const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const User = require("../models/User");
+const utils = require("../utils/utils.js");
 const bcrypt = require("bcrypt");
 
 //REGISTER New USER
 router.post("/register", async (req, res) => {
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+{
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+      return
+}
+
+const client = await Client.findOne({ clientNr: req.body.clientNr })
+if (!client)
      {
       res.status(401).json("client number does not exist");
       return
@@ -44,6 +51,12 @@ router.post("/register", async (req, res) => {
 
 //LOGIN
 router.post("/login", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+{
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+}
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
      {

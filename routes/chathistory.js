@@ -1,10 +1,17 @@
 const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const Chathistory = require("../models/Chathistory");
+const utils = require("../utils/utils.js");
 const bcrypt = require("bcrypt");
 
 //ADD to Chathistory
 router.post("/add", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const client = await Client.findOne({ clientNr: req.body.clientNr })
   if (!client)
    {
@@ -31,12 +38,18 @@ try {
     }
     } 
     catch (err) {
-      res.status(500).json(err)
+      res.status(500).json("An internal server error ocurred. Please check your fields")
     }
 });
 
 // Get all chat for a chatbot in a certain period
 router.post("/queryperiod", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
   const client = await Client.findOne({ clientNr: req.body.clientNr })
   if (!client)
    {
@@ -72,12 +85,17 @@ router.post("/queryperiod", async (req, res) => {
       
       }
       catch (err) {
-      res.status(500).json(err);
+        res.status(500).json("An internal server error ocurred. Please check your fields")
     }
   });
 
 // Count all chat for a chatbot in a certain period
   router.post("/queryperiodcount", async (req, res) => {
+    if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+    {
+    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+    return
+    }
     const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
      {
@@ -111,7 +129,7 @@ router.post("/queryperiod", async (req, res) => {
       
       }
       catch (err) {
-      res.status(500).json(err);
+        res.status(500).json("An internal server error ocurred. Please check your fields")
     }
   });
 

@@ -2,6 +2,7 @@ const router = require("express").Router();
 const Chatbot = require("../models/Chatbot");
 const User = require("../models/User");
 const Client = require("../models/Client");
+const utils = require("../utils/utils.js");
 const bcrypt = require("bcrypt");
 var {ChromaClient} = require('chromadb');
 var {OpenAIEmbeddingFunction} = require('chromadb');
@@ -26,7 +27,11 @@ router.post("/register", async (req, res) => {
 
   const CHROMA_URL = process.env.CHROMA_URL ;
   
-
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+      return
+  }
 
   try {
 
@@ -94,8 +99,7 @@ router.post("/register", async (req, res) => {
 
     res.status(200).json(chatbot);
   } catch (err) {
-    res.status(500).json(err)
-    // res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
@@ -103,6 +107,12 @@ router.post("/register", async (req, res) => {
 
 // Get base config info for one chatbot
 router.post("/query", async (req, res) => {
+  
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
 
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
@@ -133,12 +143,18 @@ router.post("/query", async (req, res) => {
     }
   } 
   catch (err) {
-  res.status(500).json(err);
+    res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
 // Get base config info for all chatbot
 router.post("/queryall", async (req, res) => {
+
+if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+{
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+}
 
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
@@ -158,7 +174,7 @@ router.post("/queryall", async (req, res) => {
     }
   } 
   catch (err) {
-    res.status(500).json(err);
+    res.status(500).json("An internal server error ocurred. Please check your fields")
   }
 });
 
@@ -166,6 +182,13 @@ router.post("/queryall", async (req, res) => {
 
 //delete chatbot
 router.post("/delete", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+  return
+  }
+
   const CHROMA_URL = process.env.CHROMA_URL ;
   const name = req.body.name;
 
@@ -194,13 +217,19 @@ router.post("/delete", async (req, res) => {
       else { res.status(404).json("Chatbot has not been deleted. Not found. Please check name and chatbotkey.") }
       }
     } catch (err) {
-      return res.status(500).json(err);
+      res.status(500).json("An internal server error ocurred. Please check your fields")
     }
   } );
   
  
   //update chatbot
 router.post("/update", async (req, res) => {
+
+  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+  {
+  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+    return
+  }
 
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
@@ -222,12 +251,12 @@ router.post("/update", async (req, res) => {
       else { res.status(404).json("Account has not been updated. Not found. Please check chatbotKey and name") }
     }
     } catch (err) {
-      return res.status(500).json(err);
+      res.status(500).json("An internal server error ocurred. Please check your fields")
     }
   } );
 
 
-   //update chatbot
+   //just a test in order to see if the backen is working
 router.post("/test", async (req, res) => {
   res.status(200).json("test is ok. Apis do arrive")
   }
