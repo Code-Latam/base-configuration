@@ -1,3 +1,4 @@
+const Client = require("../models/Client");
 const User = require("../models/User");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();

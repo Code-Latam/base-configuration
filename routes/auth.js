@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const Client = require("../models/Client");
 const Chatbot = require("../models/Chatbot");
 const User = require("../models/User");
 const utils = require("../utils/utils.js");
