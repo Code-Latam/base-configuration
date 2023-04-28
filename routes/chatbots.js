@@ -54,6 +54,7 @@ router.post("/register", async (req, res) => {
       return
     }
     
+    console.log("Just before saving chatbot");
    //create new Chatbot using chatbot model
 
     const newChatbot = new Chatbot({

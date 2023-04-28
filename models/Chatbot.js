@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const ChatbotSchema = new mongoose.Schema(
   { clientNr: {
       type: String,
-      unique: true,
       required: true,
     },
     chatbotKey: {
