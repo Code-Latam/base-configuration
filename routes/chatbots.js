@@ -54,7 +54,18 @@ router.post("/register", async (req, res) => {
       return
     }
     
-    console.log("Just before saving chatbot");
+    const mycustomPrompt = `You are a Bot assistant answering any questions about documents. 
+    You are given a question and a set of documents.
+    If the user's question requires you to provide information from the documents, 
+    give your answer first based on the examples provided in the documentation below. 
+    if you don't find an answer in the provided examples you can provide another answer.
+    If your answer is not from the documentation provided or if there in No Documentation tell the user that you didn't find the answer in the documentation and provide an other answer and 
+    rephrase his query with more details. Use bullet points if you have to make a list, only if necessary. 
+    QUESTION: {question} 
+    DOCUMENTS: 
+    ========= {context} ========= 
+    Finish by proposing your help for anything else.`
+
    //create new Chatbot using chatbot model
 
     const newChatbot = new Chatbot({
@@ -70,9 +81,11 @@ router.post("/register", async (req, res) => {
     enabled:  req.body.enabled,
     idAdminModule: req.body.isAdminmodule,
     chatbotMaster: req.body.chatbotMaster,
-    promptTemplate:  req.body.promptTemplate,
+    promptTemplate:  mycustomPrompt,
     idEnroller:  req.body.idEnroller,
     });
+
+   console.log(newChatbot);
 
     //save chatbot and
     const chatbot = await newChatbot.save();
@@ -105,7 +118,7 @@ router.post("/register", async (req, res) => {
     
     console.log(resp);
 
-    res.status(200).json(chatbot);
+    res.status(200).json("Chatbot was succesfully registered");
   } catch (err) {
     res.status(500).json("An internal server error ocurred. Please check your fields")
   }

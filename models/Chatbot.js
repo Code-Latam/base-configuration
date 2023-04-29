@@ -64,7 +64,7 @@ const ChatbotSchema = new mongoose.Schema(
     },
     promptTemplate: {
       type: String,
-      required: true,
+      required: false,
     },
     idEnroller: {
       type: String,
