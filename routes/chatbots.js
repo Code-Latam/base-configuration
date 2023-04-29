@@ -98,6 +98,13 @@ router.post("/register", async (req, res) => {
     const embedder = new OpenAIEmbeddingFunction(req.body.openaiKey); 
     const collection = await chroma_client.createCollection(req.body.name, {}, embedder);
 
+    const resp = await collection.add(["GWOCU"],
+      undefined,
+      ["author"],
+      [" This is a Gwocu Chatbot"], ) ;
+    
+    console.log(resp);
+
     res.status(200).json(chatbot);
   } catch (err) {
     res.status(500).json("An internal server error ocurred. Please check your fields")

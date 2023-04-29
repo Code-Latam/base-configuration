@@ -13,7 +13,6 @@ const ChatbotSchema = new mongoose.Schema(
     openaiKey: {
       type: String,
       required: true,
-      unique: true,
     },
     descriptiveName: {
       type: String,

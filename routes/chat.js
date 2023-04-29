@@ -9,8 +9,12 @@ const {OpenAIEmbeddingFunction} = require('chromadb');
 const axios = require("axios");
 
 
+
 //ask Chat question
 router.post("/ask", async (req, res) => {
+
+  const CHROMA_URL = process.env.CHROMA_URL ;
+
   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
 {
   res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
@@ -42,21 +46,22 @@ try {
       
 
       // get answer from Chroma
-      const client = new ChromaClient();
+      const client = new ChromaClient(CHROMA_URL);
       const embedder = new OpenAIEmbeddingFunction(openaiKey);
-      const collection = await client.getCollection(collectionName, embedder);
-     
-      const results = await collection.query(
-        undefined, 
-        1, 
-        undefined, 
-        [prompt]
-      ) ;
-
-
-      const chromaResult = results.documents[0][0] ;
-
-      console.log(chromaResult);
+      var chromaResult = "No documentation provided"
+    
+        const collection = await client.getCollection(collectionName, embedder);
+        const results = await collection.query(
+          undefined, 
+          1, 
+          undefined, 
+          [prompt]
+        ) ;
+        console.log("We got out");
+        console.log(results);
+        chromaResult = results.documents[0][0];
+       
+      
 
       // Merge prompt template with result of chroma and the prompt
 
