@@ -310,6 +310,60 @@ router.post("/test", async (req, res) => {
  );
 
 
+ // add documents to chatbot
+ router.post("/adddocs", async (req, res) => {
+ 
+   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+   {
+   res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+   return
+   }
+ 
+   const CHROMA_URL = process.env.CHROMA_URL ;
+   const name = req.body.name;
+ 
+   const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json("client number does not exist");
+       return
+      }  
+      const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      if (!chatbotmaster)
+        {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")
+        return
+      }
+
+      const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
+      if (!mychatbot)
+        {res.status(401).json("Chatbot does not exist")
+        return
+      }
+      // check if the length of the documents array is the same as the indexes array
+      if (req.body.documents.length != req.body.sources.length)
+      {res.status(401).json("The documents list must have the same number of elements as the sources list")
+        return
+      }
+      const myindexes = utils.generateIds(req.body.documents.length)
+
+     try {
+        const chroma_client = new ChromaClient(CHROMA_URL);
+        const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
+        const collection = await chroma_client.getCollection(req.body.chatbotKey, embedder)
+        await collection.add(
+          myindexes,
+            undefined,
+            req.body.sources,
+            req.body.documents,
+        ) 
+
+        res.status(200).json("documents have been added")
+        return
+     } catch (err) {
+       res.status(500).json("An internal server error ocurred. Please check your fields")
+     }
+   } );
+
 
 
 

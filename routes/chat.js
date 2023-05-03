@@ -27,6 +27,7 @@ router.post("/ask", async (req, res) => {
     res.status(401).json("client number does not exist");
     return
    }  
+
   
 try {
     //create new entry in chat history using chathistory model
@@ -47,8 +48,9 @@ try {
 
       // get answer from Chroma
       const client = new ChromaClient(CHROMA_URL);
+      console.log("after creatingg Chroma");
       const embedder = new OpenAIEmbeddingFunction(openaiKey);
-      var chromaResult = "No documentation provided"
+      console.log("after calling embedding function")
     
         const collection = await client.getCollection(collectionName, embedder);
         const results = await collection.query(

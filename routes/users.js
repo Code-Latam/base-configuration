@@ -37,6 +37,7 @@ router.post("/delete", async (req, res) => {
   res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
   return
   }
+  console.log("hello1");
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
      {
