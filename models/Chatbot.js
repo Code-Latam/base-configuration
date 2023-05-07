@@ -60,7 +60,7 @@ const ChatbotSchema = new mongoose.Schema(
     },
     chatbotMaster: {
       type: String,
-      required: false,
+      required: true,
     },
     promptTemplate: {
       type: String,
@@ -68,7 +68,7 @@ const ChatbotSchema = new mongoose.Schema(
     },
     idEnroller: {
       type: String,
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }

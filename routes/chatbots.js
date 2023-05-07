@@ -252,7 +252,7 @@ router.post("/delete", async (req, res) => {
         {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
       else
       {
-      const mychatbot = await Chatbot.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: name }] });
+      const mychatbot = await Chatbot.findOneAndDelete({ chatbotKey: req.body.chatbotKey });
       if (mychatbot) 
       {
         // delete users asociated with the chatbot
