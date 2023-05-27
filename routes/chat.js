@@ -33,7 +33,9 @@ try {
     //create new entry in chat history using chathistory model
     const callerchatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
     if (!callerchatbot)
-     {res.status(401).json("caller has no rights to asks questions")}
+     {res.status(401).json("caller has no rights to asks questions")
+     return
+    }
     else
     {
       // get prompt and chatbotKey from body
@@ -42,7 +44,13 @@ try {
       const chatbot = await Chatbot.findOne({ chatbotKey: chatbotKey })
       const {promptTemplate,openaiKey} = chatbot;
       const collectionName = chatbot.name;
-      console.log(openaiKey)
+      const validaikey = await utils.validopenai(chatbot.openaiKey)
+      if (!validaikey)
+      { 
+      
+        res.status(401).json("OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+        return
+      }
 
       
 

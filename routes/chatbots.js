@@ -226,6 +226,17 @@ router.post("/register", async (req, res) => {
       res.status(401).json("chatbot not registered. Chatbot name can only contain lowercase letters, numbers and no spaces.");
       return
     }
+
+    const validaikey = await utils.validopenai(req.body.openaiKey)
+    console.log(validaikey);
+    if (!validaikey)
+    { 
+      
+      res.status(401).json("Chatbot not registered OpenAI Key is not valid or working.");
+      return
+    }
+  
+
     
     const mycustomPrompt = `You are a Bot assistant answering any questions about documents. 
     You are given a question and a set of documents.
@@ -512,6 +523,15 @@ router.post("/test", async (req, res) => {
         {res.status(401).json("Chatbot does not exist")
         return
       }
+
+      const validaikey = await utils.validopenai(mychatbot.openaiKey)
+      if (!validaikey)
+      { 
+      
+        res.status(401).json("Documents were NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+        return
+      }
+  
       // check if the length of the documents array is the same as the indexes array
       if (req.body.documents.length != req.body.sources.length)
       {res.status(401).json("The documents list must have the same number of elements as the sources list")
@@ -570,7 +590,13 @@ router.post("/test", async (req, res) => {
        return
      }
 
+     const validaikey = await utils.validopenai(mychatbot.openaiKey)
+     if (!validaikey)
+     { 
      
+       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+       return
+     }
      
      const regex =
       /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;
@@ -660,6 +686,14 @@ router.post("/test", async (req, res) => {
          {res.status(401).json("Chatbot does not exist")
          return
        }
+
+    const validaikey = await utils.validopenai(mychatbot.openaiKey)
+     if (!validaikey)
+     { 
+     
+       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+       return
+     }
   
     const regex =
         /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;

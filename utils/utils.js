@@ -1,3 +1,23 @@
+
+const { Configuration, OpenAIApi } = require("openai");
+
+async function validopenai(openaikey)
+{
+try{
+const configuration = new Configuration ({
+  apiKey: openaikey
+});
+
+const openai = new OpenAIApi (configuration);
+const response = await openai.listModels ();
+return true ;
+}
+catch(error)
+{
+  return false;
+}
+}
+
 function gwokenCorrect(body, gwoken) {
     return true;
   }
@@ -25,3 +45,4 @@ function generateIds(a) {
   
   module.exports.gwokenCorrect = gwokenCorrect;
   module.exports.generateIds = generateIds;
+  module.exports.validopenai = validopenai;
