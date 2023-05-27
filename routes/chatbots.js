@@ -263,7 +263,7 @@ router.post("/register", async (req, res) => {
     publicbot:  req.body.publicbot,
     paid:  req.body.paid,
     enabled:  req.body.enabled,
-    idAdminModule: req.body.isAdminmodule,
+    idAdminModule: req.body.isAdminModule,
     chatbotMaster: req.body.chatbotMaster,
     promptTemplate:  mycustomPrompt,
     idEnroller:  req.body.idEnroller,
