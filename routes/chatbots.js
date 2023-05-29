@@ -623,8 +623,6 @@ router.post("/test", async (req, res) => {
         sourcesarray.length = 0;
         urls.length = 0;
     
-        res.status(500).json("Just before crawl function")
-        return
     await crawl(req.body.url,false,5000);
     res.status(500).json("Just after crawl function")
     return
