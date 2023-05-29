@@ -560,8 +560,6 @@ router.post("/test", async (req, res) => {
    // add url pages to chatbot
  router.post("/addurl", async (req, res) => {
 
-
-
  
   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
   {
@@ -637,21 +635,27 @@ router.post("/test", async (req, res) => {
 
     try {
        const chroma_client = new ChromaClient(CHROMA_URL);
+       res.status(500).json("Just after new chroma client" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
+       return
        const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
        const collection = await chroma_client.getCollection(mychatbot.name, embedder)
        await collection.add(
          myindexes,
            undefined,
            sourcesarray,
-           docsarray,
+           docsarray
        ) 
 
        res.status(200).json("URL page added");
+       return;
+     } 
+     catch (err) 
+     {
+       res.status(500).json("Crawl An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
        return
-     } catch (err) {
-       res.status(500).json("An internal server error ocurred. Please check your fields")
-     }
-  } );
+      }
+      } );
+     
 
 
 

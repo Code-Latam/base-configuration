@@ -33,7 +33,7 @@ try {
     //create new entry in chat history using chathistory model
     const callerchatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
     if (!callerchatbot)
-     {res.status(401).json("caller has no rights to asks questions")
+     {res.status(401).json("Chatbot indicated by chatbot key does not exist")
      return
     }
     else
