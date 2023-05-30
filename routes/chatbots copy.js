@@ -4,12 +4,147 @@ const User = require("../models/User");
 const Client = require("../models/Client");
 const utils = require("../utils/utils.js");
 const bcrypt = require("bcrypt");
+const axios = require("axios");
 var {ChromaClient} = require('chromadb');
 var {OpenAIEmbeddingFunction} = require('chromadb');
 const fs = require('fs')
 const { PuppeteerWebBaseLoader } = require("langchain/document_loaders/web/puppeteer");
 const {convert} = require('html-to-text');
 var request = require ('request-promise');
+var request2 = require ('request-promise');
+var docsarray = [];
+var sourcesarray = [];
+var urls = [];
+var mycounter = 0;
+
+function cleanupText(text) {
+  // remove line breaks from start and end of string 
+  text = text.trim();
+  // replace two or more spaces with a single space
+  text = text.replace(/ {2,}/g, ' ');
+  // replace two or more line breaks with two line breaks
+  text = text.replace(/[\n\r]{2,}/g, '\n\n');
+  return text;
+ }
+
+
+
+async function validurl(url){
+  const regex = /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;  
+  if (!regex.test(url))
+  {
+  return false
+  }
+  try
+       {
+       let aliveresponse = await axios.get(req.body.url);
+       if (aliveresponse.status != 200) {
+         // the page is not alive
+         return false
+                                      }
+        }
+        catch(error) {
+          return false
+        }
+
+
+
+}
+
+async function crawl(url,crawlthisurl,chunksize)
+{
+  // when entering this function the url must be vaild. 
+  
+
+  if  (!crawlthisurl)  // just return the docs for this url do not crawl  
+  {
+    const loader = new PuppeteerWebBaseLoader(url, {
+      launchOptions: {
+        headless: "new",
+      }});
+    const docs = await loader.load();
+    const myinitialdocsarray = [];
+    const myinitialsourcesaray = [];
+      for (let mydoc of docs) { // Loop through each object in the array
+        const html = mydoc.pageContent;
+        const mytext = convert(html, { preserveNewlines:true,
+          selectors: [{ selector: 'img', format: 'skip' } ]
+        });
+        const mycleantext = cleanupText(mytext);
+        myinitialdocsarray.push(mycleantext); 
+        myinitialsourcesaray.push(url);
+      }
+  
+      const mychunkedobject = chunkArray(myinitialdocsarray,myinitialsourcesaray,chunksize)
+      
+        docsarray.push(...mychunkedobject.resultdocsarray);
+        sourcesarray.push(...mychunkedobject.resultsourcesarray);
+
+      return
+  }    
+
+  const loader = new PuppeteerWebBaseLoader(url, {
+    launchOptions: {
+      headless: "new"
+    },gotoOptions: {
+      waitUntil: "domcontentloaded",
+    }
+  
+  });
+  mycounter = mycounter+1;
+  if (mycounter>=2)
+  {return}
+
+
+  const docs = await loader.load();
+  const myinitialdocsarray = [];
+  const myinitialsourcesaray = [];
+  for (let mydoc of docs) { // Loop through each object in the array
+        const html = mydoc.pageContent;
+        const mytext = convert(html, { preserveNewlines:true,
+          selectors: [{ selector: 'img', format: 'skip' } ]
+        });
+        const mycleantext = cleanupText(mytext);
+        myinitialdocsarray.push(mycleantext); 
+        myinitialsourcesaray.push(url);
+      
+  }
+  // remove these comments:
+  const mychunkedobject = chunkArray(myinitialdocsarray,myinitialsourcesaray,chunksize)
+  docsarray.push(...mychunkedobject.resultdocsarray);
+  sourcesarray.push(...mychunkedobject.resultsourcesarray);
+
+  // get links from the html page;
+  const html = docs[0].pageContent;
+  const { parse } = require("node-html-parser");
+  const root = parse(html);
+  const links = root.querySelectorAll("a");
+
+  for (let link of links) {
+    // Get the href attribute of the link
+    let href = link.getAttribute('href');
+   
+    // Check if the href is valid and not external
+    if (href && href.startsWith('/') && !href.startsWith('//')) {
+    // Check if the url is already in the array
+    if (!urls.includes(url+href)) {
+    // Add the url to the array if valid
+        if (validurl(url+href))
+          {
+          urls.push(url+href);
+          // Crawl the url recursively
+          await crawl(url+href, true,chunksize);
+          }
+
+                                  }
+    }
+    }
+ return
+
+  
+
+  
+}
 
 
 function createSourceArray(length, source) {
@@ -21,21 +156,25 @@ function createSourceArray(length, source) {
 }
 
 
-function chunkArray(array, size) {
-  let result = [];
+function chunkArray(array,arraysources, size) {
+  let resultdocsarray = [];
+  let resultsourcesarray = [];
   for (let i = 0; i < array.length; i++) {
-    let element = array[i];
-    // var words = element.split(/\s+/);
-     //let words = element.split(/\s+(?![^\w\s])/); // split the element by one or more spaces that are not followed by a special character
-     let words = element.split(/(?<!\S)\s+(?!\S)/);
-     for (let j = 0; j < words.length; j += size) {
-      let chunk = words.slice(j, j + size).join(" "); // slice the words array by size and join them by spaces
-      result.push(chunk); // push the chunk to the result
-    }
+  let element = array[i];
+  let start = 0; // initialize the start index
+  while (start < element.length) { // loop until the end of the element
+  let end = start + size; // calculate the end index
+  let chunk = element.slice(start, end); // get the chunk using slice
+  resultdocsarray.push(chunk); // push the chunk to the result
+  resultsourcesarray.push(arraysources[i]); // push the source to the result
+  start = end; // update the start index
   }
+  }
+  console.log(resultsourcesarray);
+  const result = { resultdocsarray: resultdocsarray,
+  resultsourcesarray: resultsourcesarray};
   return result;
-}
-
+  }
 
 
 function isValidname(value) {
@@ -87,6 +226,17 @@ router.post("/register", async (req, res) => {
       res.status(401).json("chatbot not registered. Chatbot name can only contain lowercase letters, numbers and no spaces.");
       return
     }
+
+    const validaikey = await utils.validopenai(req.body.openaiKey)
+    console.log(validaikey);
+    if (!validaikey)
+    { 
+      
+      res.status(401).json("Chatbot not registered OpenAI Key is not valid or working.");
+      return
+    }
+  
+
     
     const mycustomPrompt = `You are a Bot assistant answering any questions about documents. 
     You are given a question and a set of documents.
@@ -113,7 +263,7 @@ router.post("/register", async (req, res) => {
     publicbot:  req.body.publicbot,
     paid:  req.body.paid,
     enabled:  req.body.enabled,
-    idAdminModule: req.body.isAdminmodule,
+    idAdminModule: req.body.isAdminModule,
     chatbotMaster: req.body.chatbotMaster,
     promptTemplate:  mycustomPrompt,
     idEnroller:  req.body.idEnroller,
@@ -292,7 +442,7 @@ router.post("/delete", async (req, res) => {
         // delete users asociated with the chatbot
         await User.deleteMany({chatbotKey: req.body.chatbotKey});
         const chroma_client = new ChromaClient(CHROMA_URL);
-        await chroma_client.deleteCollection(req.body.name);
+        await chroma_client.deleteCollection(mychatbot.name);
         res.status(200).json("Chatbot has been deleted")
       }
       else { res.status(404).json("Chatbot has not been deleted. Not found. Please check name and chatbotkey.") }
@@ -373,6 +523,15 @@ router.post("/test", async (req, res) => {
         {res.status(401).json("Chatbot does not exist")
         return
       }
+
+      const validaikey = await utils.validopenai(mychatbot.openaiKey)
+      if (!validaikey)
+      { 
+      
+        res.status(401).json("Documents were NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+        return
+      }
+  
       // check if the length of the documents array is the same as the indexes array
       if (req.body.documents.length != req.body.sources.length)
       {res.status(401).json("The documents list must have the same number of elements as the sources list")
@@ -383,7 +542,7 @@ router.post("/test", async (req, res) => {
      try {
         const chroma_client = new ChromaClient(CHROMA_URL);
         const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
-        const collection = await chroma_client.getCollection(req.body.chatbotKey, embedder)
+        const collection = await chroma_client.getCollection(mychatbot.name, embedder)
         await collection.add(
           myindexes,
             undefined,
@@ -400,9 +559,7 @@ router.post("/test", async (req, res) => {
 
    // add url pages to chatbot
  router.post("/addurl", async (req, res) => {
-  const got = await import('got');
 
-  
  
   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
   {
@@ -431,7 +588,13 @@ router.post("/test", async (req, res) => {
        return
      }
 
+     const validaikey = await utils.validopenai(mychatbot.openaiKey)
+     if (!validaikey)
+     { 
      
+       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+       return
+     }
      
      const regex =
       /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;
@@ -441,76 +604,158 @@ router.post("/test", async (req, res) => {
       res.status(401).json("The URL is not valid");
       return
      }
-     try{
-     await request (req.body.url);
-     }
-     catch(error)
-     {
-      res.status(401).json("Website indicated by URL is not live");
-      return
-     }
+
+     try
+       {
+       let aliveresponse = await axios.get(req.body.url);
+       if (aliveresponse.status != 200) {
+         // the page is alive
+         res.status(401).json("The URL does not respond");
+         return
+                                      }
+        }
+        catch(error) {
+          res.status(401).json("The URL does not respond");
+          return
+        }
+     // empty global arrays
+        docsarray.length= 0;
+        sourcesarray.length = 0;
+        urls.length = 0;
     
+    // await crawl(req.body.url,false,5000);
+    res.status(500).json("Just after crawl function")
+    return
+
+      
+    console.log("array length: ");
+    console.log(docsarray.length)
+
+    console.log(docsarray[0])
+
+    const myindexes = utils.generateIds(docsarray.length)
+
+    try {
+       const chroma_client = new ChromaClient(CHROMA_URL);
+       res.status(500).json("Just after new chroma client" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
+       return
+       const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
+       const collection = await chroma_client.getCollection(mychatbot.name, embedder)
+       await collection.add(
+         myindexes,
+           undefined,
+           sourcesarray,
+           docsarray
+       ) 
+
+       res.status(200).json("URL page added");
+       return;
+     } 
+     catch (err) 
+     {
+       res.status(500).json("Crawl An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
+       return
+      }
+      } );
      
 
-      /**
-      * Loader uses `page.evaluate(() => document.body.innerHTML)`
-      * as default evaluate function
-      **/
-    const loader = new PuppeteerWebBaseLoader(req.body.url);
-    const docs = await loader.load();
 
-    const mydocsarray = [];
-    
-    
-    for (let mydoc of docs) { // Loop through each object in the array
-      const html = mydoc.pageContent;
-      const mytext = convert(html, { preserveNewlines:true,
-        selectors: [{ selector: 'img', format: 'skip' } ]
-      });
-      mydocsarray.push(mytext); // Add the value of the property to the new array
+
+  // Crawl pages give a URL and add pages to chatbot
+  router.post("/crawl", async (req, res) => {
+
+  // set some constatnts
+  const CHROMA_URL = process.env.CHROMA_URL ;
+  const name = req.body.name;
+
+  // Testing of parameters in the request body  
+    if (!utils.gwokenCorrect(req.body, req.body.gwoken))
+    {
+    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+    return
     }
+  
+    const client = await Client.findOne({ clientNr: req.body.clientNr })
+      if (!client)
+       {
+        res.status(401).json("client number does not exist");
+        return
+       }  
+    const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+       if (!chatbotmaster)
+         {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")
+         return
+       }
+  
+    const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
+       if (!mychatbot)
+         {res.status(401).json("Chatbot does not exist")
+         return
+       }
 
-    // a page can be long so we need to chunk up this array
+    const validaikey = await utils.validopenai(mychatbot.openaiKey)
+     if (!validaikey)
+     { 
+     
+       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+       return
+     }
+  
+    const regex =
+        /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;
+  
+      if (!regex.test(req.body.url))
+       {
+        res.status(401).json("The URL is not valid");
+        return
+       }
+       try
+       {
+       let aliveresponse = await axios.get(req.body.url);
+       if (aliveresponse.status != 200) {
+         // the page is alive
+         res.status(401).json("The URL does not respond");
+         return
+                                      }
+        }
+        catch(error) {
+          res.status(401).json("The URL does not respond");
+          return
+        }
+      
+    docsarray.length= 0;
+    sourcesarray.length = 0;
+    urls.length = 0;
+    mycounter = 0;
+  
+    await crawl(req.body.url,true,5000);
 
-     const mychunkeddocs = chunkArray(mydocsarray,1024);
-     const myarraylength = mychunkeddocs.length;
+    console.log("just left crawl:")
+    console.log(mycounter)
+    console.log(urls);
 
-    // generate the sources array based on the length of the chuncked up array
-    
-    const mysourcesarray = createSourceArray(myarraylength, req.body.url)
-
-    // console.log("array length: ");
-    // console.log(mychunkeddocs.length)
-
-    console.log(mychunkeddocs[0])
-    // console.log(mysourcesarray)
-
-     res.status(200).json("URL pages added");
-     return
-
-
-
-     // const myindexes = utils.generateIds(req.body.documents.length)
-
-    //try {
-      // const chroma_client = new ChromaClient(CHROMA_URL);
-      // const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
-      // const collection = await chroma_client.getCollection(req.body.chatbotKey, embedder)
-     //  await collection.add(
-      //   myindexes,
-      //     undefined,
-       //    req.body.sources,
-       //    req.body.documents,
-      // ) 
-
-       // res.status(200).json("documents have been added")
-       //return
-    // } catch (err) {
-    //   res.status(500).json("An internal server error ocurred. Please check your fields")
-    // }
-  } );
-
-
+     
+    const myindexes = utils.generateIds(docsarray.length)
+  
+      try {
+        const chroma_client = new ChromaClient(CHROMA_URL);
+        const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
+        const collection = await chroma_client.getCollection(mychatbot.name, embedder)
+       await collection.add(
+          myindexes,
+               undefined,
+              sourcesarray,
+              docsarray,
+         ) 
+  
+        res.status(200).json("URL pages added");
+        return
+        } catch (err) {
+          res.status(500).json("An internal server error ocurred. Please check your fields")
+        }
+    } );
+  
+  
 
 
 module.exports = router;

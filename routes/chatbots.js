@@ -9,6 +9,7 @@ var {ChromaClient} = require('chromadb');
 var {OpenAIEmbeddingFunction} = require('chromadb');
 const fs = require('fs')
 const { PuppeteerWebBaseLoader } = require("langchain/document_loaders/web/puppeteer");
+const { CheerioWebBaseLoader } =  require("langchain/document_loaders/web/cheerio");
 const {convert} = require('html-to-text');
 var request = require ('request-promise');
 var request2 = require ('request-promise');
@@ -60,7 +61,7 @@ async function crawl(url,crawlthisurl,chunksize)
   {
     const loader = new PuppeteerWebBaseLoader(url, {
       launchOptions: {
-        headless: "new",
+        headless: "new",args: ['--no-sandbox']
       }});
     const docs = await loader.load();
     const myinitialdocsarray = [];
@@ -624,7 +625,9 @@ router.post("/test", async (req, res) => {
         urls.length = 0;
     
     await crawl(req.body.url,false,5000);
+    console.log(docsarray[1]);
     res.status(500).json("Just after crawl function")
+    
     return
 
       
