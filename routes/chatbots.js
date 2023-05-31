@@ -86,12 +86,8 @@ async function crawl(url,crawlthisurl,chunksize)
 
   const loader = new PuppeteerWebBaseLoader(url, {
     launchOptions: {
-      headless: "new"
-    },gotoOptions: {
-      waitUntil: "domcontentloaded",
-    }
-  
-  });
+      headless: "new",args: ['--no-sandbox']
+    }});
   mycounter = mycounter+1;
   if (mycounter>=2)
   {return}
@@ -625,14 +621,6 @@ router.post("/test", async (req, res) => {
         urls.length = 0;
     
     await crawl(req.body.url,false,5000);
-    console.log(docsarray[1]);
-    res.status(500).json("Just after crawl function")
-    
-    return
-
-      
-    console.log("array length: ");
-    console.log(docsarray.length)
 
     console.log(docsarray[0])
 
@@ -640,8 +628,6 @@ router.post("/test", async (req, res) => {
 
     try {
        const chroma_client = new ChromaClient(CHROMA_URL);
-       res.status(500).json("Just after new chroma client" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
-       return
        const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
        const collection = await chroma_client.getCollection(mychatbot.name, embedder)
        await collection.add(
@@ -656,7 +642,7 @@ router.post("/test", async (req, res) => {
      } 
      catch (err) 
      {
-       res.status(500).json("Crawl An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
+       res.status(500).json("An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
        return
       }
       } );
@@ -732,11 +718,6 @@ router.post("/test", async (req, res) => {
     mycounter = 0;
   
     await crawl(req.body.url,true,5000);
-
-    console.log("just left crawl:")
-    console.log(mycounter)
-    console.log(urls);
-
      
     const myindexes = utils.generateIds(docsarray.length)
   
