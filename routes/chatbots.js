@@ -403,7 +403,14 @@ if (!utils.gwokenCorrect(req.body, req.body.gwoken))
       {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
     else
     {
-    const chatbots = await Chatbot.find({chatbotMaster:req.body.chatbotMaster});
+    // const chatbots = await Chatbot.find({chatbotMaster:req.body.chatbotMaster});
+    
+    const chatbots = await Chatbot.find({
+      $or: [
+        {chatbotKey:req.body.chatbotMaster},
+        {chatbotMaster:req.body.chatbotMaster}
+      ]
+    });
     res.status(200).json(chatbots);
     }
   } 
