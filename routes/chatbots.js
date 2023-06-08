@@ -267,6 +267,7 @@ router.post("/register", async (req, res) => {
     });
 
    console.log(newChatbot);
+   //hello
 
     //save chatbot and
     const chatbot = await newChatbot.save();
