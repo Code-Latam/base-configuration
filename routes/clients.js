@@ -10,11 +10,6 @@ const dotenv = require("dotenv");
 //update client
 router.post("/update", async (req, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
   const SECRET_KEY = process.env.SECRET_KEY
   if (req.body.secretKey!= SECRET_KEY)
     { 
@@ -22,11 +17,16 @@ router.post("/update", async (req, res) => {
       return
     }
   try {
+    if (req.body.password)
+    {
     const salt = await bcrypt.genSalt(10);
     req.body.password = await bcrypt.hash(req.body.password, salt);
-
+    } 
+    if (req.body.clientToken)
+    {
     const salt2 = await bcrypt.genSalt(10);
-    req.body.clientToken = await bcrypt.hash(req.body.clientToken, salt);
+    req.body.clientToken = await bcrypt.hash(req.body.clientToken, salt2);
+    }
 
     const client = await Client.findOneAndUpdate({ clientNr: req.body.clientNr }, {
     $set: req.body});
@@ -40,11 +40,6 @@ router.post("/update", async (req, res) => {
 //delete client
 router.post("/delete", async (req, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -71,11 +66,6 @@ router.post("/delete", async (req, res) => {
 // Get client one client
 router.post("/query", async (req, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -97,11 +87,6 @@ router.post("/query", async (req, res) => {
 // Get all clients
 router.post("/queryall", async (req, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
   const SECRET_KEY = process.env.SECRET_KEY ;
   if (req.body.secretKey!= SECRET_KEY)
   { 
@@ -128,16 +113,11 @@ router.post("/queryall", async (req, res) => {
 
 router.post("/register", async (req, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
   const salt = await bcrypt.genSalt(10);
   const hashedpassword = await bcrypt.hash(req.body.password, salt);
 
   const salt2 = await bcrypt.genSalt(10);
-  const hashedclienttoken = await bcrypt.hash(req.body.clientToken, salt);
+  const hashedclienttoken = await bcrypt.hash(req.body.clientToken, salt2);
   
 
   
@@ -148,10 +128,17 @@ router.post("/register", async (req, res) => {
     return
   }
 
+  var client = await Client.findOne({ clientNr: req.body.clientNr  });
+    if (client)
+    {
+    res.status(404).json("Client allready exists");
+    return
+    }
+
   try {
 
     
-   //create new Chatbot using chatbot model
+   //create new client using client model
 
     const newClient = new Client({
     clientNr: req.body.clientNr,
@@ -161,7 +148,7 @@ router.post("/register", async (req, res) => {
     password:  hashedpassword
     });
 
-    //save chatbot and
+    //save client and
     const client = await newClient.save();  
 
     res.status(200).json(client);

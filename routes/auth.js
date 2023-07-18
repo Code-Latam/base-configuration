@@ -6,19 +6,40 @@ const utils = require("../utils/utils.js");
 const bcrypt = require("bcrypt");
 
 //REGISTER New USER
-router.post("/register", async (req, res) => {
-if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-{
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-      return
-}
+router.post("/register", async (request, res) => {
+  const req = await utils.getDecodedBody(request);
 
-const client = await Client.findOne({ clientNr: req.body.clientNr })
-if (!client)
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
+
   try 
   {
     //generate new password
@@ -41,48 +62,70 @@ if (!client)
         res.status(200).json(user);
       
     } 
-   else { res.status(404).json("No chatbot found to add this user to.");}
+   else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this user to.",req.body.apiPublicKey));}
   } 
   
    catch (err) {
-      res.status(500).json("An Internal Server error ocurred")
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
     }
   
 });
 
 //LOGIN
-router.post("/login", async (req, res) => {
+router.post("/login", async (request, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-{
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-}
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+  const req = await utils.getDecodedBody(request);
+
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
+
   try {
     // find the user based on the email and the chatbotkey
     const user = await User.findOne({ $and: [ {chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
     if (!user)
     {
-    res.status(404).json("User not found.");
+    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"User not found.",req.body.apiPublicKey));
     }
     else 
      {
     const validPassword = await bcrypt.compare(req.body.password, user.password)
     if (!validPassword) 
-      { res.status(401).json("Wrong email or password.") }
+      { res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Wrong email or password.",req.body.apiPublicKey)) }
     else 
-      { res.status(200).json(user)}
+      { res.status(200).json(utils.Encryptresponse(req.encryptresponse,user,req.body.apiPublicKey))}
      }
 
     
   } catch (err) {
-    res.status(500).json(err)
+    res.status(500).json(utils.Encryptresponse(req.encryptresponse,err,req.body.apiPublicKey));
   }
 });
 

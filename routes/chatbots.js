@@ -183,44 +183,74 @@ function isValidname(value) {
 }
 
 //REGISTER
-router.post("/register", async (req, res) => {
+router.post("/register", async (request, res) => {
   // const salt = await bcrypt.genSalt(10);
   // const hashedchatbotKey = await bcrypt.hash(req.body.chatbotKey, salt);
   // const hashedopenaiKey = await bcrypt.hash(req.body.openaiKey, salt);
 
   const CHROMA_URL = process.env.CHROMA_URL ;
   
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-      return
-  }
+  const req = await utils.getDecodedBody(request);
 
+  if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
   try {
 
     const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
       return
      }  
     
   const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
   if (!chatbotmaster)
    {
-    res.status(401).json("chatbotmaster has no rights to create, maintain or query chatbots");
+    res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbotmaster has no rights to create, maintain or query chatbots",req.body.apiPublicKey));
     return
    }
    
    const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
       if (mychatbot)
-        {res.status(401).json("Chatbot allready exists!")
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot allready exists!",req.body.apiPublicKey))
         return
       }
 
    if (!isValidname(req.body.name))
     {
-      res.status(401).json("chatbot not registered. Chatbot name can only contain lowercase letters, numbers and no spaces.");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbot not registered. Chatbot name can only contain lowercase letters, numbers and no spaces.",req.body.apiPublicKey));
       return
     }
 
@@ -229,7 +259,7 @@ router.post("/register", async (req, res) => {
     if (!validaikey)
     { 
       
-      res.status(401).json("Chatbot not registered OpenAI Key is not valid or working.");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot not registered OpenAI Key is not valid or working.",req.body.apiPublicKey));
       return
     }
   
@@ -300,53 +330,84 @@ router.post("/register", async (req, res) => {
     
     console.log(resp);
 
-    res.status(200).json("Chatbot was succesfully registered");
+    res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Chatbot was succesfully registered",req.body.apiPublicKey));
   } catch (err) {
-    res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
   }
 });
 
 // Get base config info for a chatbot
 
 // Get base config info for one chatbot
-router.post("/query", async (req, res) => {
-  
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
+router.post("/query", async (request, res) => {
 
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+  // Get the usere request body of the request.
+  // The API received by this backen can be of 4 types
+  // ENDtoEND and GWOKEN
+  // GWOKEN 
+  // ENDtoEND
+  // NORMAL
+
+
+  
+  const req = await utils.getDecodedBody(request);
+
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
 
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+
+
   try {
-    const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+    const chatbotmaster = await Chatbot.findOne({ $and: [{ clientNr: req.body.clientNr },{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
     if (!chatbotmaster)
-      {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+      {res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbot master has no rights to create, maintain or query chatbots for this client",req.body.apiPublicKey))}
     else
     {
     const chatbot = await Chatbot.findOne({
-      $and: [
-        {
-          $or: [
-            { chatbotKey: req.body.chatbotKey },
-            { name: req.body.name }
-          ]
-        },
-        { chatbotMaster: req.body.chatbotMaster }
+      $and: [        
+          { chatbotKey: req.body.chatbotKey },
+          { chatbotMaster: req.body.chatbotMaster },
+          { clientNr: req.body.clientNr }
       ]
     })
     const { password, updatedAt, ...other } = chatbot._doc;
-    res.status(200).json(other);
+    res.status(200).json(utils.Encryptresponse(req.encryptresponse,other,req.body.apiPublicKey));
     }
   } 
   catch (err) {
-    res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"chatbot was not found",req.body.apiPublicKey));
   }
 });
 
@@ -382,29 +443,54 @@ router.post("/getmaster", async (req, res) => {
 
 
 
-// Get base config info for all chatbot
-router.post("/queryall", async (req, res) => {
+// Get base information for all chatbots
+router.post("/queryall", async (request, res) => {
 
-if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-{
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-}
+const req = await utils.getDecodedBody(request);
 
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+  
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+  if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
+
   
   try {
-    const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+    const chatbotMaster = await Chatbot.findOne({ $and: [{ clientNr: req.body.clientNr }, { chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
     if (!chatbotMaster)
-      {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+      {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbot master has no rights to create, maintain or query chatbots for this client",req.body.apiPublicKey))}
     else
     {
-    // const chatbots = await Chatbot.find({chatbotMaster:req.body.chatbotMaster});
     
     const chatbots = await Chatbot.find({
       $or: [
@@ -412,30 +498,50 @@ if (!utils.gwokenCorrect(req.body, req.body.gwoken))
         {chatbotMaster:req.body.chatbotMaster}
       ]
     });
-    res.status(200).json(chatbots);
+    res.status(200).json(utils.Encryptresponse(req.encryptresponse,chatbots,req.body.apiPublicKey));
     }
   } 
   catch (err) {
-    res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(500).json(utils.Encryptresponse(req.encryptresponse,"no chatbots found for this chatbotMaster",req.body.apiPublicKey));
   }
 });
 
 
 // Get all chatbots by client!
-router.post("/queryallbyclient", async (req, res) => {
+router.post("/queryallbyclient", async (request, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-    return
-  }
+  const req = await utils.getDecodedBody(request);
+
+if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
   
-    const client = await Client.findOne({ clientNr: req.body.clientNr })
-      if (!client)
-       {
-        res.status(401).json("client number does not exist");
-        return
-       }  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  
+  const client = await Client.findOne({ clientNr: req.body.clientNr })
+  if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
     
     try {
       
@@ -443,83 +549,160 @@ router.post("/queryallbyclient", async (req, res) => {
       res.status(200).json(chatbots);
       } 
     catch (err) {
-      res.status(500).json("An internal server error ocurred. Please check your fields")
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse,"no chatbots were found for this client, please check your clientNr",req.body.apiPublicKey))
     }
   });
 
 
 //delete chatbot
-router.post("/delete", async (req, res) => {
+router.post("/delete", async (request, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
+  const req = await utils.getDecodedBody(request);
 
-  const CHROMA_URL = process.env.CHROMA_URL ;
-  const name = req.body.name;
-
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
+
+  const CHROMA_URL = process.env.CHROMA_URL ;
+
+  
     try {
 
-      const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      const chatbotmaster = await Chatbot.findOne({ $and: [{ clientNr: req.body.clientNr },{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
       if (!chatbotmaster)
-        {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")}
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbot master has no rights to create, maintain or query chatbots for this client",req.body.apiPublicKey))}
       else
       {
-      const mychatbot = await Chatbot.findOneAndDelete({ chatbotKey: req.body.chatbotKey });
+      const mychatbot = await Chatbot.findOneAndDelete(
+        {
+          $and: [        
+              { chatbotKey: req.body.chatbotKey },
+              { chatbotMaster: req.body.chatbotMaster },
+              { clientNr: req.body.clientNr }
+          ]
+        });
       if (mychatbot) 
       {
         // delete users asociated with the chatbot
         await User.deleteMany({chatbotKey: req.body.chatbotKey});
         const chroma_client = new ChromaClient(CHROMA_URL);
         await chroma_client.deleteCollection(mychatbot.name);
-        res.status(200).json("Chatbot has been deleted")
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Chatbot has been deleted",req.body.apiPublicKey));
       }
-      else { res.status(404).json("Chatbot has not been deleted. Not found. Please check name and chatbotkey.") }
+      else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Chatbot has not been deleted. Not found. Please check ClientNr, chatbotMaster and chatbotKey.",req.body.apiPublicKey)) }
       }
     } catch (err) {
-      res.status(500).json("An internal server error ocurred. Please check your fields")
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
     }
   } );
   
  
   //update chatbot
-router.post("/update", async (req, res) => {
+router.post("/update", async (request, res) => {
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-    return
-  }
+  const req = await utils.getDecodedBody(request);
 
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
 
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      }  
+
+
     try {
-      const chatbotMaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      const chatbotMaster = await Chatbot.findOne({ $and: [{ clientNr: req.body.clientNr }, { chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
       if (!chatbotMaster)
-        {res.status(401).json("caller has no rights to create, maintain or query chatbots")}
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"caller has no rights to create, maintain or query chatbots for this client",req.body.apiPublicKey))}
       else
       {
-      const mychatbot = await Chatbot.findOneAndUpdate({ $and: [{ chatbotKey: req.body.chatbotKey }, { name: req.body.name }] }, {
+      const mychatbot = await Chatbot.findOneAndUpdate( {
+        $and: [        
+            { chatbotKey: req.body.chatbotKey },
+            { chatbotMaster: req.body.chatbotMaster },
+            { clientNr: req.body.clientNr }
+        ]
+      }, {
         $set: req.body,
       });
-      if (mychatbot) {res.status(200).json("Account has been updated")}
-      else { res.status(404).json("Account has not been updated. Not found. Please check chatbotKey and name") }
+      if (mychatbot) {res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Chatbot has been updated",req.body.apiPublicKey))}
+      else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"chatbot has not been updated. Please check clientNr, chatbotMaster and chatbotKey",req.body.apiPublicKey)) }
     }
     } catch (err) {
-      res.status(500).json("An internal server error ocurred. Please check your fields")
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
     }
   } );
 
@@ -532,32 +715,65 @@ router.post("/test", async (req, res) => {
 
 
  // add documents to chatbot
- router.post("/adddocs", async (req, res) => {
+ router.post("/adddocs", async (request, res) => {
  
-   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-   {
-   res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-   return
-   }
+   
  
-   const CHROMA_URL = process.env.CHROMA_URL ;
-   const name = req.body.name;
+  const CHROMA_URL = process.env.CHROMA_URL ;
  
-   const client = await Client.findOne({ clientNr: req.body.clientNr })
+  const req = await utils.getDecodedBody(request);
+
+  if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
-       res.status(401).json("client number does not exist");
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
-      const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+
+       const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
       if (!chatbotmaster)
-        {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")
-        return
-      }
+         {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot master has no rights to create, maintain or query chatbots",req.body.apiPublicKey))
+         return
+       }
 
       const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
       if (!mychatbot)
-        {res.status(401).json("Chatbot does not exist")
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot does not exist",req.body.apiPublicKey))
         return
       }
 
@@ -565,13 +781,13 @@ router.post("/test", async (req, res) => {
       if (!validaikey)
       { 
       
-        res.status(401).json("Documents were NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Documents were NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.",req.body.apiPublicKey));
         return
       }
   
       // check if the length of the documents array is the same as the indexes array
       if (req.body.documents.length != req.body.sources.length)
-      {res.status(401).json("The documents list must have the same number of elements as the sources list")
+      {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The documents list must have the same number of elements as the sources list",req.body.apiPublicKey))
         return
       }
       const myindexes = utils.generateIds(req.body.documents.length)
@@ -587,58 +803,88 @@ router.post("/test", async (req, res) => {
             req.body.documents,
         ) 
 
-        res.status(200).json("documents have been added")
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,"documents have been added",req.body.apiPublicKey))
         return
      } catch (err) {
-       res.status(500).json("An internal server error ocurred. Please check your fields")
+       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
      }
    } );
 
    // add url pages to chatbot
- router.post("/addurl", async (req, res) => {
-
- 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-  {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-  return
-  }
+ router.post("/addurl", async (request, res) => {
 
   const CHROMA_URL = process.env.CHROMA_URL ;
-  const name = req.body.name;
+ 
+  const req = await utils.getDecodedBody(request);
 
-  const client = await Client.findOne({ clientNr: req.body.clientNr })
-    if (!client)
+  if (!req.endtoendPass)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
      }  
-     const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
-     if (!chatbotmaster)
-       {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")
-       return
-     }
 
-     const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
-     if (!mychatbot)
-       {res.status(401).json("Chatbot does not exist")
-       return
-     }
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
 
-     const validaikey = await utils.validopenai(mychatbot.openaiKey)
-     if (!validaikey)
-     { 
-     
-       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
-     }
-     
+      }  
+
+       const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      if (!chatbotmaster)
+         {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot master has no rights to create, maintain or query chatbots",req.body.apiPublicKey))
+         return
+       }
+
+      const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
+      if (!mychatbot)
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot does not exist",req.body.apiPublicKey))
+        return
+      }
+
+      const validaikey = await utils.validopenai(mychatbot.openaiKey)
+      if (!validaikey)
+      { 
+      
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL page was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.",req.body.apiPublicKey));
+        return
+      }
+  
      const regex =
       /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;
 
     if (!regex.test(req.body.url))
      {
-      res.status(401).json("The URL is not valid");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL is not valid",req.body.apiPublicKey));
       return
      }
 
@@ -647,12 +893,12 @@ router.post("/test", async (req, res) => {
        let aliveresponse = await axios.get(req.body.url);
        if (aliveresponse.status != 200) {
          // the page is alive
-         res.status(401).json("The URL does not respond");
+         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL does not respond",req.body.apiPublicKey));
          return
                                       }
         }
         catch(error) {
-          res.status(401).json("The URL does not respond");
+          res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL does not respond",req.body.apiPublicKey));
           return
         }
      // empty global arrays
@@ -677,12 +923,12 @@ router.post("/test", async (req, res) => {
            docsarray
        ) 
 
-       res.status(200).json("URL page added");
+       res.status(200).json(utils.Encryptresponse(req.encryptresponse,"URL page added",req.body.apiPublicKey));
        return;
      } 
      catch (err) 
      {
-       res.status(500).json("An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name)
+       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields" +  "CHROMA_URL: " + CHROMA_URL + " OPANAIKEY: " + mychatbot.openaiKey + "CHATBOT NAME:" + mychatbot.name, req.body.apiPublicKey))
        return
       }
       } );
@@ -691,64 +937,94 @@ router.post("/test", async (req, res) => {
 
 
   // Crawl pages give a URL and add pages to chatbot
-  router.post("/crawl", async (req, res) => {
+  router.post("/crawl", async (request, res) => {
 
   // set some constatnts
   const CHROMA_URL = process.env.CHROMA_URL ;
-  const name = req.body.name;
-
-  // Testing of parameters in the request body  
-    if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-    {
-    res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
-    return
-    }
   
-    const client = await Client.findOne({ clientNr: req.body.clientNr })
-      if (!client)
-       {
-        res.status(401).json("client number does not exist");
-        return
-       }  
-    const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
-       if (!chatbotmaster)
-         {res.status(401).json("Chatbot master has no rights to create, maintain or query chatbots")
-         return
-       }
-  
-    const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
-       if (!mychatbot)
-         {res.status(401).json("Chatbot does not exist")
-         return
-       }
+  const req = await utils.getDecodedBody(request);
 
-    const validaikey = await utils.validopenai(mychatbot.openaiKey)
-     if (!validaikey)
-     { 
-     
-       res.status(401).json("URL was NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+  if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+  // check required fields of the body
+
+  
+
+  if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.body.chatbotMaster)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.chatbotKey)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
-     }
+      }  
+
+       const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
+      if (!chatbotmaster)
+         {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot master has no rights to create, maintain or query chatbots",req.body.apiPublicKey))
+         return
+       }
+
+      const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
+      if (!mychatbot)
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot does not exist",req.body.apiPublicKey))
+        return
+      }
+
+      const validaikey = await utils.validopenai(mychatbot.openaiKey)
+      if (!validaikey)
+      { 
+      
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL pages were NOT added. OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.",req.body.apiPublicKey));
+        return
+      }
   
     const regex =
         /^(https?|ftp):\/\/([a-z0-9+!*(),;?&=.-]+(:[a-z0-9+!*(),;?&=.-]+)?@)?([a-z0-9-.]*)(\.([a-z]{2,3}))(:[0-9]{2,5})?(\/([a-z0-9+%-]\.?)+)*\/?(\?([a-z+&$_.-][a-z0-9;:@&%=+/$_.-]*)?)?(#[a-z_.-][a-z0-9+$_.-]*)?$/i;
   
       if (!regex.test(req.body.url))
        {
-        res.status(401).json("The URL is not valid");
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL is not valid",req.body.apiPublicKey));
         return
        }
        try
        {
        let aliveresponse = await axios.get(req.body.url);
        if (aliveresponse.status != 200) {
-         // the page is alive
-         res.status(401).json("The URL does not respond");
+         // the page is not alive
+         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL does not respond",req.body.apiPublicKey));
          return
                                       }
         }
         catch(error) {
-          res.status(401).json("The URL does not respond");
+          res.status(401).json(utils.Encryptresponse(req.encryptresponse,"The URL does not respond",req.body.apiPublicKey));
           return
         }
       
@@ -772,10 +1048,10 @@ router.post("/test", async (req, res) => {
               docsarray,
          ) 
   
-        res.status(200).json("URL pages added");
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,"URL pages added",req.body.apiPublicKey));
         return
         } catch (err) {
-          res.status(500).json("An internal server error ocurred. Please check your fields")
+          res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
         }
     } );
   

@@ -34,6 +34,14 @@ const ClientSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    gwoken: {
+      type: Boolean,
+      default: false,
+    },
+    endtoend: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

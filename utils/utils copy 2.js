@@ -1,5 +1,8 @@
 const Client = require("../models/Client");
-const crypto = require('crypto-js');
+const crypto = require('crypto');
+
+// Import the elliptic module using pm
+
 
 const forge = require('node-forge');
 
@@ -22,37 +25,24 @@ console.log(body.message);
 
 const privateKey = forge.pki.privateKeyFromPem(backendPrivateKey);
 
-// bring both key and message to 64 base
-
-var ekeydecodedfrom64 = forge.util.decode64(body.ekey)
-var messagedecodedfrom64 = forge.util.decode64(body.message);
+var ekeydecode64 = forge.util.decode64(body.ekey)
 
 // We will first decrypt the key that was used to encrypt the message
 
-const decryptedAESkey = privateKey.decrypt(ekeydecodedfrom64, 'RSA-OAEP');
+const decryptedekey = privateKey.decrypt(ekeydecode64, 'RSA-OAEP');
 
 console.log("Dycrypted ekey:");
-console.log(decryptedAESkey);
+console.log(decryptedekey);
 
-// now we will decrypt the message
-
-var decipher = forge.cipher.createDecipher('AES-CBC', decryptedAESkey);
-decipher.start({iv: decryptedAESkey}); // use the same key as iv for simplicity
-decipher.update(forge.util.createBuffer(messagedecodedfrom64));
-decipher.finish();
-var decryptedData = decipher.output.getBytes();
-
-// Convert the decrypted data to a JSON object
+// now we will decrypt the m
 
 try {
-  const data = JSON.parse(decryptedData);
-  console.log("Decrypted JSON:");
-  console.log(data);
+  const jsonObject = JSON.parse(decryptedMessage);
   return (
   {
     result: true,
     body: {
-      ...data
+      ...jsonObject
     }
   })
   
@@ -64,13 +54,20 @@ catch (error) {
     })
 }
  
+console.log(jsonObject);
 
+  // Return an object with the result and the decrypted JSON
+
+    
   };
 
 
 
 
-async function  CalculateSignature(token,parameters)
+
+
+
+function CalculateSignature(token,parameters)
 {
     // calculate the hash value of the token
     
@@ -91,7 +88,7 @@ async function  CalculateSignature(token,parameters)
 
     const MySignature = crypto.MD5(MyString).toString();
     
-    return MySignature;
+    // return MySignature;
 
     
 // sort object alphabetically by reverse key
@@ -113,25 +110,18 @@ async function gwokenCorrect(body) {
 
   // get a body without the gwoken field
 
-  const mycleanedbody = removeProperty("gwoken", body)
+  mycleanedbody = removeProperty("gwoken", body)
   
-   if (!body.gwoken)
+  if (!body.gwoken)
   {
-    console.log("NO GWOKEN provided");
     return false
-   }
-  
+  }
+  // console.log("API signature:");
+  // console.log(body.gwoken)
   const client = await Client.findOne({ clientNr: body.clientNr });
-
-  const backendsignature = await CalculateSignature(client.clientToken,mycleanedbody);
-  console.log("BODY PASSED TO GWOKENCORRECT");
-  console.log(body);
-  console.log("FRONTEND SIGNATURE");
-  console.log(body.gwoken);
-  console.log("BACKEND SIGNATURE =");
-  console.log(backendsignature);
-  
-  
+  const backendsignature = CalculateSignature(client.clientToken,mycleanedbody);
+  // console.log("Backend signature:");
+  // console.log(backendsignature);
   return (body.gwoken==backendsignature);
 }
 
@@ -154,30 +144,21 @@ function removeProperty(propertyName, object) {
 async function getDecodedBody(apiReq) {
   var endtoendPass = false;
   var gwokenPass = false;
-  var encryptresponse = false;
-  
+
+
 
     if (apiReq.body.ekey) // API is sending encryption
     {
       // get the body and result of the decription
       const decryption = endToEndDecrypt(apiReq.body);
       endtoendPass = decryption.result
-        
-      
       if (endtoendPass) // body was succesfully decrypted
-      {   
-        const client = await Client.findOne({ clientNr: decryption.body.clientNr });
-        if (client.endtoend)
-          {encryptresponse = true}
-        else { encryptresponse = false}   
-
-          if (decryption.body.gwoken)
+      {   if (client.gwoken)
           {
           gwokenPass = await gwokenCorrect(decryption.body); 
           const myreq ={
             endtoendPass: true,
             gwokenPass: gwokenPass,
-            encryptresponse: encryptresponse,
             ...decryption
                         }
           return myreq
@@ -185,40 +166,20 @@ async function getDecodedBody(apiReq) {
           }
           else
           {
-            //no Gwoken supplied in body
-            const client2 = await Client.findOne({ clientNr: decryption.body.clientNr });
-              if (client2.gwoken) // client has gwoken enabled
-              {
-                const myreq ={
-                  endtoendPass: true,
-                  gwokenPass: false,
-                  encryptresponse: encryptresponse,
-                  ...decryption
-                              }
-                return myreq
-              }
-              else
-              {
-              const myreq ={
+            const myreq ={
               endtoendPass: true,
               gwokenPass: true,
-              encryptresponse: encryptresponse,
               ...decryption
                           }
-              return myreq
-              }
-
-
+            return myreq
           }
           
       }
-      else // body was not succesfully decrypted
+      else
       {
-        
         const myreq ={
           endtoendPass: false,
           gwokenPass: false,
-          encryptresponse: false,
           ...apiReq
           
         }
@@ -233,13 +194,11 @@ async function getDecodedBody(apiReq) {
       if (client.endtoend)
       {
         endtoendPass = false;
-        gwokenPass = true;
-      
+        gwokenPass = false;
         const myreq =
         {
         endtoendPass: endtoendPass,
         gwokenPass: gwokenPass,
-        encryptresponse: false,
         ...apiReq
         }
         return myreq
@@ -250,11 +209,9 @@ async function getDecodedBody(apiReq) {
         if (client.gwoken)
           {
           gwokenPass = await gwokenCorrect(apiReq.body); 
-          console.log("After calculating GWOKEN")
           const myreq ={
             endtoendPass: true,
             gwokenPass: gwokenPass,
-            encryptresponse: false,
             ...apiReq
                         }
           return myreq
@@ -265,7 +222,6 @@ async function getDecodedBody(apiReq) {
             const myreq ={
               endtoendPass: true,
               gwokenPass: true,
-              encryptresponse: false,
               ...apiReq
                           }
             return myreq
@@ -319,60 +275,8 @@ function generateIds(a) {
   return ids;
 }
   
-function Encryptresponse(encrypt, body, remotepublickeyPEM)  
-// note body is a string or an object
- {
-   if (!encrypt)
-   return body
-
-// convert the backend publickey to a forge publickey object
-
-if (!remotepublickeyPEM) // api public key was not provided
-{
-return "no Public key provided by API consumer";
-}
-
-
-const publicKey = forge.pki.publicKeyFromPem(remotepublickeyPEM);
-
-/**** START Encrypt AES with assymetric RSA-OAEP key and set body ekey variable ****/
-
-const aesKey = forge.random.getBytesSync(16); // generate random 16 bits key
-
-const encryptedaesKey = publicKey.encrypt (aesKey, 'RSA-OAEP');
-var encoded64encryptedaesKey = forge.util.encode64 (encryptedaesKey); 
-
-var myencryptedreturbody = 
-{
-  ekey:encoded64encryptedaesKey,
-  message: "none"
-}
-
-/**** END OF Encrypt AES key and set body ekey variable ****/
-
-/**** START Encrypt message with symetric AES key and set body message variable ****/
-
-
-var originalMessageString = JSON.stringify(body);
-
-var cipher = forge.cipher.createCipher('AES-CBC', aesKey);
-cipher.start({iv: aesKey}); // use the same key as iv for simplicity
-cipher.update(forge.util.createBuffer(originalMessageString));
-cipher.finish();
-var encryptedMessage = cipher.output.getBytes(); // get encrypted message
-var ecoded64encryptedMessage = forge.util.encode64(encryptedMessage); // encode to 64 so it can be sent
-
-myencryptedreturbody.message = ecoded64encryptedMessage;
-
-return myencryptedreturbody;
-
-/**** END OF Encrypt message with symetric AES key and set body message variable ****/
-
-
- }
-
+  
   module.exports.gwokenCorrect = gwokenCorrect;
   module.exports.generateIds = generateIds;
   module.exports.validopenai = validopenai;
   module.exports.getDecodedBody = getDecodedBody;
-  module.exports.Encryptresponse = Encryptresponse;
