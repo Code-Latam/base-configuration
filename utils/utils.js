@@ -190,7 +190,7 @@ async function getDecodedBody(apiReq) {
           }
           else
           {
-            //no Gwoken supplied in body
+            //noo Gwoken supplied in body
             const client2 = await Client.findOne({ clientNr: decryption.body.clientNr });
               if (client2?.gwoken) // client has gwoken enabled
               {
