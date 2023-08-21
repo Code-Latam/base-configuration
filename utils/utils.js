@@ -73,6 +73,8 @@ catch (error) {
 async function  CalculateSignature(token,parameters)
 {
     // calculate the hash value of the token
+    console.log("PARAMETER PASSED TO CALCULATESIGNATURE");
+    console.log(parameters);
     
     var ApiTokenHashvalue = crypto.MD5(token).toString();
     
@@ -114,6 +116,9 @@ async function gwokenCorrect(body) {
   // get a body without the gwoken field
 
   const mycleanedbody = removeProperty("gwoken", body)
+
+  console.log("BODY PASSED TO GWOKENCORRECT");
+  console.log(body);
   
    if (!body.gwoken)
   {
@@ -124,11 +129,11 @@ async function gwokenCorrect(body) {
   const client = await Client.findOne({ clientNr: body.clientNr });
 
   const backendsignature = await CalculateSignature(client.clientToken,mycleanedbody);
-  console.log("BODY PASSED TO GWOKENCORRECT");
-  console.log(body);
-  console.log("FRONTEND SIGNATURE");
+  
+  
+  console.log("FRONTEND GWOKEN SIGNATURE");
   console.log(body.gwoken);
-  console.log("BACKEND SIGNATURE =");
+  console.log("BACKEND GWOKEN SIGNATURE =");
   console.log(backendsignature);
   
   
@@ -167,7 +172,7 @@ async function getDecodedBody(apiReq) {
       if (endtoendPass) // body was succesfully decrypted
       {   
         const client = await Client.findOne({ clientNr: decryption.body.clientNr });
-        if (client.endtoend)
+        if (client?.endtoend)
           {encryptresponse = true}
         else { encryptresponse = false}   
 
@@ -187,7 +192,7 @@ async function getDecodedBody(apiReq) {
           {
             //no Gwoken supplied in body
             const client2 = await Client.findOne({ clientNr: decryption.body.clientNr });
-              if (client2.gwoken) // client has gwoken enabled
+              if (client2?.gwoken) // client has gwoken enabled
               {
                 const myreq ={
                   endtoendPass: true,
@@ -230,7 +235,7 @@ async function getDecodedBody(apiReq) {
     {
       // check if clientNr exist in API call and if it does check if end to end is enabled for that client
       const client = await Client.findOne({ clientNr: apiReq.body.clientNr });
-      if (client.endtoend)
+      if (client?.endtoend)
       {
         endtoendPass = false;
         gwokenPass = true;
@@ -247,10 +252,9 @@ async function getDecodedBody(apiReq) {
       else
       { 
         endtoendPass = true;
-        if (client.gwoken)
+        if (client?.gwoken)
           {
           gwokenPass = await gwokenCorrect(apiReq.body); 
-          console.log("After calculating GWOKEN")
           const myreq ={
             endtoendPass: true,
             gwokenPass: gwokenPass,

@@ -9,20 +9,29 @@ const {OpenAIEmbeddingFunction} = require('chromadb');
 const axios = require("axios");
 
 //ask Chat question
-router.post("/ask", async (req, res) => {
+router.post("/ask", async (request, res) => {
+
+  const req = await utils.getDecodedBody(request);
 
   const CHROMA_URL = process.env.CHROMA_URL ;
 
-  if (!utils.gwokenCorrect(req.body, req.body.gwoken))
-{
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
       return
-}
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
 
   const client = await Client.findOne({ clientNr: req.body.clientNr })
   if (!client)
    {
-    res.status(401).json("client number does not exist");
+    res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
     return
    }  
 
@@ -31,8 +40,9 @@ try {
     //create new entry in chat history using chathistory model
     const callerchatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
     if (!callerchatbot)
-     {res.status(401).json("Chatbot indicated by chatbot key does not exist")
-     return
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot indicated by chatbot key does not exist",req.body.apiPublicKey));
+      return
     }
     else
     {
@@ -45,8 +55,7 @@ try {
       const validaikey = await utils.validopenai(chatbot.openaiKey)
       if (!validaikey)
       { 
-      
-        res.status(401).json("OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.");
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"OpenAI Key is not valid or working. Please update your chatbot with a valid OpenAI key.",req.body.apiPublicKey));
         return
       }
 
@@ -109,12 +118,13 @@ try {
   
       //save cand respond
       const chathistoryItem = await newChathistory.save();
-
-      res.status(200).json(chatgptAnswer);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,chatgptAnswer,req.body.apiPublicKey));
+        
     }
     } 
     catch (err) {
-      res.status(500).json(err)
+      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"An unspecified error occurred",req.body.apiPublicKey));
+        
     }
 });
 

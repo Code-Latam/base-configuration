@@ -244,7 +244,7 @@ router.post("/register", async (request, res) => {
    
    const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
       if (mychatbot)
-        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Chatbot allready exists!",req.body.apiPublicKey))
+        {res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A chatbot with this chatbotKey already exists!",req.body.apiPublicKey))
         return
       }
 
@@ -446,6 +446,9 @@ router.post("/getmaster", async (req, res) => {
 // Get base information for all chatbots
 router.post("/queryall", async (request, res) => {
 
+console.log("request body");
+console.log(request.body);
+
 const req = await utils.getDecodedBody(request);
 
 if (!req.endtoendPass)
@@ -546,7 +549,7 @@ if (!req.endtoendPass)
     try {
       
       const chatbots = await Chatbot.find({clientNr:req.body.clientNr});
-      res.status(200).json(chatbots);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,chatbots,req.body.apiPublicKey));
       } 
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"no chatbots were found for this client, please check your clientNr",req.body.apiPublicKey))

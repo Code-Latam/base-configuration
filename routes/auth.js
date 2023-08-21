@@ -38,7 +38,14 @@ router.post("/register", async (request, res) => {
       {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
-      }  
+      } 
+      
+      const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email })
+     if (user)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A user with this email allready exists for this chatbot",req.body.apiPublicKey));
+       return
+      } 
 
   try 
   {
@@ -120,7 +127,8 @@ router.post("/login", async (request, res) => {
     if (!validPassword) 
       { res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Wrong email or password.",req.body.apiPublicKey)) }
     else 
-      { res.status(200).json(utils.Encryptresponse(req.encryptresponse,user,req.body.apiPublicKey))}
+      { 
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,user,req.body.apiPublicKey))}
      }
 
     
