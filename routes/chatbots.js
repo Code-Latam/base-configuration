@@ -211,19 +211,19 @@ router.post("/register", async (request, res) => {
 
   if (!req.body.clientNr)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      res.status(410).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
       return
      }  
 
   if (!req.body.chatbotMaster)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
+      res.status(413).json(utils.Encryptresponse(req.encryptresponse,"chatbotMaster is a required field",req.body.apiPublicKey));
       return
      } 
 
      if (!req.body.chatbotKey)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      res.status(414).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
       return
      } 
   try {
@@ -234,13 +234,19 @@ router.post("/register", async (request, res) => {
       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
       return
      }  
-    
-  const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" }] })
-  if (!chatbotmaster)
-   {
-    res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbotmaster has no rights to create, maintain or query chatbots",req.body.apiPublicKey));
-    return
-   }
+  
+
+  // check if there is any chatbot for this client:
+  const anychatbot = await Chatbot.findOne({  clientNr: req.body.clientNr })
+  if (anychatbot)
+  {
+    const chatbotmaster = await Chatbot.findOne({ $and: [{ chatbotKey: req.body.chatbotMaster },{ isAdminModule: "true" },{ clientNr: req.body.clientNr } ] })
+    if (!chatbotmaster)
+    {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"chatbotmaster has no rights to create, maintain or query chatbots",req.body.apiPublicKey));
+      return
+    }
+  }
    
    const mychatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
       if (mychatbot)
