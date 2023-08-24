@@ -11,7 +11,6 @@ const ClientSchema = new mongoose.Schema(
     },
     clientToken: {
       type: String,
-      unique: true,
       required: true,
     },
     clientname: {

@@ -142,7 +142,7 @@ router.post("/register", async (req, res) => {
 
     const newClient = new Client({
     clientNr: req.body.clientNr,
-    clientToken: hashedclienttoken,
+    clientToken: req.body.clientToken,
     clientname: req.body.clientname,
     email:  req.body.email,
     password:  hashedpassword,
