@@ -145,7 +145,9 @@ router.post("/register", async (req, res) => {
     clientToken: hashedclienttoken,
     clientname: req.body.clientname,
     email:  req.body.email,
-    password:  hashedpassword
+    password:  hashedpassword,
+    gwoken:req.body.gwoken,
+    endtoend:req.body.endtoend
     });
 
     //save client and
