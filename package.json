@@ -30,6 +30,7 @@
     "openai": "^3.2.1",
     "path": "^0.12.7",
     "puppeteer": "^19.7.2",
+    "react-switch": "^7.0.0",
     "request-promise": "^4.2.6",
     "sjcl": "^1.0.8"
   }

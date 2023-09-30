@@ -21,6 +21,11 @@ const chatbotRoute = require("./routes/chatbots");
 const chathistoryRoute = require("./routes/chathistory");
 const chatRoute = require("./routes/chat");
 const clientsRoute = require("./routes/clients");
+const explorerRoute = require("./routes/explorers");
+const workflowRoute = require("./routes/workflows");
+const taskRoute = require("./routes/tasks");
+const linkRoute = require("./routes/links");
+const apiRoute = require("./routes/apis");
 
 
 const router = express.Router();
@@ -72,6 +77,11 @@ app.use("/api/users", userRoute);
 app.use("/api/chathistory", chathistoryRoute);
 app.use("/api/chat", chatRoute);
 app.use("/api/clients", clientsRoute);
+app.use("/api/explorer", explorerRoute);
+app.use("/api/workflow", workflowRoute);
+app.use("/api/task", taskRoute);
+app.use("/api/link", linkRoute);
+app.use("/api/api", apiRoute);
 
 
 const port = process.env.PORT || 8800
