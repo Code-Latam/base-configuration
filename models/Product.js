@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 
-const WorkflowSchema = new mongoose.Schema(
+const ProductSchema = new mongoose.Schema(
 
   {
     clientNr: {
@@ -13,10 +13,6 @@ const WorkflowSchema = new mongoose.Schema(
         required: true,
       },
     productName: {
-        type: String,
-        required: true,
-      },
-    name: {
       type: String,
       required: true,
     },
@@ -28,5 +24,5 @@ const WorkflowSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-WorkflowSchema.index({ clientNr: 1, explorerId:1, productName:1, name: 1 }, { unique: true });
-module.exports = mongoose.model("Workflow", WorkflowSchema);
+ProductSchema.index({ clientNr: 1, explorerId:1,  productName: 1 }, { unique: true });
+module.exports = mongoose.model("Product", ProductSchema);

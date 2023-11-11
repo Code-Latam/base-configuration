@@ -1,4 +1,6 @@
 const Client = require("../models/Client");
+const Task = require("../models/Task");
+const Api = require("../models/Api");
 const Link = require("../models/Link");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
@@ -88,7 +90,7 @@ router.post("/register", async (request, res) => {
    
  });
 
-//update task
+//update link
 router.post("/update", async (request, res) => {
 
 const req = await utils.getDecodedBody(request);
@@ -125,9 +127,9 @@ const req = await utils.getDecodedBody(request);
       return
      } 
 
-     if (!req.body.taskId)
+     if (!req.body.linkId)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"linkId is a required field",req.body.apiPublicKey));
       return
      } 
 
@@ -137,27 +139,27 @@ const req = await utils.getDecodedBody(request);
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
-      const mytask = await Task.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName: req.body.workflowName, taskId: req.body.taskId })
-      if (!mytask)
+      const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName: req.body.workflowName, linkId: req.body.linkId })
+      if (!mylink)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A task object with this clientNr, explorerId, workflowName and taskId does not exist. Unable to update",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this clientNr, explorerId, workflowName and linkId does not exist. Unable to update",req.body.apiPublicKey));
         return
        } 
 
 
   try {
 
-    const task = await Task.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { taskId: req.body.taskId }, { workflowName: req.body.workflowName }] }, {
+    const link = await Link.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { linkId: req.body.linkId }, { workflowName: req.body.workflowName }] }, {
     $set: req.body});
-    if (!task) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The task object has not been updated. Not found!",req.body.apiPublicKey))}
-    else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Task object has been updated.",req.body.apiPublicKey)) }
+    if (!link) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The link object has not been updated. Not found!",req.body.apiPublicKey))}
+    else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Link object has been updated.",req.body.apiPublicKey)) }
   } catch (err) {
     res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
   }
 } );
 
 
-//delete task
+//delete link
 router.post("/delete", async (request, res) => {
   const req = await utils.getDecodedBody(request);
 
@@ -200,22 +202,22 @@ router.post("/delete", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const mytask = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, workflowName:req.body.workflowName ,taskId: req.body.taskId })
-      if (!mytask)
+     const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, workflowName:req.body.workflowName ,linkId: req.body.linkId })
+      if (!mylink)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An task object with this clientNr, explorerId, workflowName and taskId does not exist. Unable to delete",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An link object with this clientNr, explorerId, workflowName and taskId does not exist. Unable to delete",req.body.apiPublicKey));
         return
        } 
       
    try {
-    var task = await Task.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}, { taskId: req.body.taskId }] });
-    if (!task)
+    var link = await Link.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}, { linkId: req.body.linkkId }] });
+    if (!link)
     {
-    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Task object not found and not deleted",req.body.apiPublicKey));
+    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Link object not found and not deleted",req.body.apiPublicKey));
     }
     else
     {
-      res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Task object has been deleted",req.body.apiPublicKey));
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Link object has been deleted",req.body.apiPublicKey));
     }
    }
   catch (err) {
@@ -223,7 +225,7 @@ router.post("/delete", async (request, res) => {
     }
 });
 
-// Query one task
+// Query one workflow for its links
 router.post("/query", async (request, res) => {
 
   const req = await utils.getDecodedBody(request);
@@ -260,38 +262,31 @@ router.post("/query", async (request, res) => {
      } 
 
 
-     if (!req.body.taskId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const mytask = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,workflowName: req.body.workflowName,taskId: req.body.taskId })
-      if (!mytask)
+     const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,workflowName: req.body.workflowName })
+      if (!mylink)
        {
-        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A task object with this task ID does not exist. Unable to fetch",req.body.apiPublicKey));
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A link object with this workfloName does not exist. Unable to fetch",req.body.apiPublicKey));
         return
        } 
   try {
     
-    const tasks = await Task.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName ,taskId: req.body.taskId });
-    if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr, explorerId and taskId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(tasks) }
+    const links = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName });
+    if (!links) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No link object found for this clientNr, explorerId and workflowName combination",req.body.apiPublicKey))}
+    else {res.status(200).json(links) }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
   }
 });
 
-
-// Query all workflows
-router.post("/queryall", async (request, res) => {
+// Query one workflow for all of its links, get all the apis
+router.post("/queryorderedapi", async (request, res) => {
 
    const req = await utils.getDecodedBody(request);
  
@@ -313,19 +308,19 @@ router.post("/queryall", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
-
+ 
       if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
-     if (!req.body.workflowName)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
-      return
-     } 
-
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      } 
+ 
+      if (!req.body.workflowName)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
+       return
+      } 
+ 
  
       const client = await Client.findOne({ clientNr: req.body.clientNr })
       if (!client)
@@ -333,16 +328,107 @@ router.post("/queryall", async (request, res) => {
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
         return
        } 
+      const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,workflowName: req.body.workflowName })
+       if (!mylink)
+        {
+         res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A link object with this workfloName does not exist. Unable to fetch",req.body.apiPublicKey));
+         return
+        } 
    try {
      
-     const tasks = await Task.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId , workflowName:req.body.workflowName});
-     if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr, explorerId and workflowName",req.body.apiPublicKey))}
-     else {res.status(200).json(tasks) }
+     const link = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName });
+     if (!link) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No link object found for this clientNr, explorerId and workflowName combination",req.body.apiPublicKey))}
+     else 
+     
+     {
+      // first order the tasks in an array
+      const taskNames = findOrder(link);
+      // Now make an array of the assoicated api names
+      const apiNamesArray = [];
+      for (const taskName of taskNames) {
+         const taskData = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, taskId:taskName })
+         if (taskData) {
+           apiNamesArray.push(taskData.apiName);
+         }
+       }
+       const apiObjectsArray = [];
+
+       for (const apiName of apiNamesArray) {
+         if (apiName === "") {
+           apiObjectsArray.push({});
+         } else {
+           const apiData = await Api.findOne({ clientNr: req.body.clientNr, name: apiName });
+           if (apiData) {
+             apiObjectsArray.push(apiData);
+           }
+         }
+       }
+
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,apiObjectsArray,req.body.apiPublicKey)) 
      }
+   }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
    }
+
+
+
+
+   function findOrder(link) {
+      // Create a map to store the tasks and their dependencies
+      const taskMap = new Map();
+      
+      // Populate the taskMap with tasks and their dependencies
+      for (const linkObj of link.links) {
+          const source = linkObj.source;
+          const target = linkObj.target;
+          
+          if (!taskMap.has(source)) {
+              taskMap.set(source, { task: source, dependencies: [] });
+          }
+          
+          if (!taskMap.has(target)) {
+              taskMap.set(target, { task: target, dependencies: [] });
+          }
+          
+          taskMap.get(target).dependencies.push(source);
+      }
+      
+      const result = [];
+      const visited = new Set();
+      const visiting = new Set();
+      let hasCycle = false;
+      
+      function visit(task) {
+          if (visiting.has(task)) {
+              hasCycle = true;
+          }
+          if (!visited.has(task) && !hasCycle) {
+              visiting.add(task);
+              for (const dependency of taskMap.get(task).dependencies) {
+                  visit(dependency);
+              }
+              visiting.delete(task);
+              visited.add(task);
+              result.push(task);
+          }
+      }
+      
+      for (const task of taskMap.keys()) {
+          visit(task);
+      }
+      
+      if (hasCycle) {
+          return "Cycle detected, cannot determine order.";
+      } else {
+          return result;
+      }
+  }
+  
+  
+
  });
+
 
 
 module.exports = router;

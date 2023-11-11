@@ -1,5 +1,5 @@
 const Client = require("../models/Client");
-const Task = require("../models/Api");
+const Api = require("../models/Api");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
@@ -28,11 +28,6 @@ router.post("/register", async (request, res) => {
        return
       }  
  
-      if (!req.body.taskId)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
-       return
-      } 
 
       if (!req.body.name)
       {
@@ -40,11 +35,6 @@ router.post("/register", async (request, res) => {
        return
       } 
 
-      if (!req.body.explorerId)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-       return
-      } 
  
 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -109,17 +99,6 @@ const req = await utils.getDecodedBody(request);
       return
      }  
 
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
-     if (!req.body.taskId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
-      return
-     } 
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -170,17 +149,6 @@ router.post("/delete", async (request, res) => {
       return
      }  
 
-     if (!req.body.taskId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -235,36 +203,17 @@ router.post("/query", async (request, res) => {
       return
      }  
 
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
-
-     if (!req.body.taskId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const mytask = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,taskId: req.body.taskId })
-      if (!mytask)
-       {
-        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"An task object with this task ID does not exist. Unable to fetch",req.body.apiPublicKey));
-        return
-       } 
   try {
     
-    const tasks = await Task.findOne({ clientNr: req.body.clientNr, taskId: req.body.taskId });
-    if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr and taskId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(tasks) }
+    const api = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name });
+    if (!api) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API object found for this clientNr and name combination",req.body.apiPublicKey))}
+    else {res.status(200).json(api) }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -296,13 +245,7 @@ router.post("/queryall", async (request, res) => {
        return
       }  
 
-      if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
 
- 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
       if (!client)
        {
@@ -311,9 +254,9 @@ router.post("/queryall", async (request, res) => {
        } 
    try {
      
-     const tasks = await Task.find({ clientNr: req.body.clientNr,exploreId: req.body.explorerId});
-     if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr",req.body.apiPublicKey))}
-     else {res.status(200).json(tasks) }
+     const Apis = await Api.find({ clientNr: req.body.clientNr});
+     if (!Apis) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API objects found for this clientNr",req.body.apiPublicKey))}
+     else {res.status(200).json(Apis) }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

@@ -21,7 +21,7 @@ const ApiSchema = new mongoose.Schema(
     required: true,
     },
     headers: {
-      type: String,
+      type: [String],
     },
     method: {
       type: String,
@@ -40,8 +40,8 @@ const ApiSchema = new mongoose.Schema(
       required: true,
     },
     parametersDescription: {
-      type: [mongoose.Schema.Types.Mixed], // Allow any type of objects in the array
-      default: [], // Default value is an empty array
+      type: mongoose.Schema.Types.Mixed, // Allow any type of objects in the array
+      default: {}, // Default value is an empty object
     },
   },
   { timestamps: true }
