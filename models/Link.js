@@ -9,6 +9,10 @@ const linkObjectSchema = new mongoose.Schema({
   target: {
     type: String,
     required: true
+  },
+  type: {
+    type: String,
+    required: true
   }
 });
 
@@ -26,10 +30,6 @@ const LinkSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    linkId: {
-      type: String,
-      required: true
-    },
     // Add the links field as an array of linkObjectSchema
     links: [linkObjectSchema]
   },
@@ -37,7 +37,7 @@ const LinkSchema = new mongoose.Schema(
 );
 
 LinkSchema.index(
-  { clientNr: 1, explorerId: 1, workflowName: 1, linkId: 1 },
+  { clientNr: 1, explorerId: 1, workflowName: 1 },
   { unique: true }
 );
 module.exports = mongoose.model("Link", LinkSchema);

@@ -199,6 +199,18 @@ router.post("/delete", async (request, res) => {
        } 
       
    try {
+    // create a list of workflow names associated with the product
+
+    const myWorkflows = await Workflow.find({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { productName: req.body.productName }] });
+    for (const workflow of myWorkflows) {
+      // delete all tasks for each workflow
+      await Task.deleteMany({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{ workflowName: workflow.name }] });
+      // delete the links associated with the workflow
+      await Link.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{ workflowName: workflow.name }] });
+      // delete the workflow
+      await Workflow.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { productName: req.body.productName },{ name: workflow.name }] });     
+    }
+
     var product = await Product.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { productName: req.body.productName }] });
     if (!product)
     {

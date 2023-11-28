@@ -32,6 +32,18 @@ const TaskSchema = new mongoose.Schema(
       type: String,
       default:""
     },
+    symbolType: {
+      type: String,
+      default:"circle"
+    },
+    x: {
+      type: Number,
+      required: false,
+    },
+    y: {
+      type: Number,
+      required: false,
+    },
   },
   { timestamps: true }
 );

@@ -40,12 +40,6 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
        return
       } 
- 
-   if (!req.body.linkId)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"linkId is a required field",req.body.apiPublicKey));
-       return
-      } 
 
       if (!req.body.links)
       {
@@ -62,10 +56,10 @@ router.post("/register", async (request, res) => {
         return
        } 
        
-      const mylink = await Link.findOne({ clientNr: req.body.clientNr,explorerId: req.body.explorerId , linkId: req.body.linkId, workflowName:req.body.workflowName })
+      const mylink = await Link.findOne({ clientNr: req.body.clientNr,explorerId: req.body.explorerId , workflowName:req.body.workflowName })
       if (mylink)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this linkId allready exists for this clientNr, explorer Id and workflowName",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this clientNr, explorer Id and workflowName allready exists",req.body.apiPublicKey));
         return
        } 
  
@@ -77,7 +71,6 @@ router.post("/register", async (request, res) => {
            clientNr: req.body.clientNr,
            explorerId: req.body.explorerId,
            workflowName:req.body.workflowName,
-           linkId: req.body.linkId,
            links: req.body.links,
          });
          const link = await newLink.save();
@@ -127,11 +120,6 @@ const req = await utils.getDecodedBody(request);
       return
      } 
 
-     if (!req.body.linkId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"linkId is a required field",req.body.apiPublicKey));
-      return
-     } 
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -139,17 +127,17 @@ const req = await utils.getDecodedBody(request);
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
-      const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName: req.body.workflowName, linkId: req.body.linkId })
+      const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName: req.body.workflowName})
       if (!mylink)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this clientNr, explorerId, workflowName and linkId does not exist. Unable to update",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this clientNr, explorerId, workflowName does not exist. Unable to update",req.body.apiPublicKey));
         return
        } 
 
 
   try {
 
-    const link = await Link.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { linkId: req.body.linkId }, { workflowName: req.body.workflowName }] }, {
+    const link = await Link.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { workflowName: req.body.workflowName }] }, {
     $set: req.body});
     if (!link) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The link object has not been updated. Not found!",req.body.apiPublicKey))}
     else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Link object has been updated.",req.body.apiPublicKey)) }
@@ -202,15 +190,15 @@ router.post("/delete", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, workflowName:req.body.workflowName ,linkId: req.body.linkId })
+     const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, workflowName:req.body.workflowName  })
       if (!mylink)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An link object with this clientNr, explorerId, workflowName and taskId does not exist. Unable to delete",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An link object with this clientNr, explorerId, workflowName does not exist. Unable to delete",req.body.apiPublicKey));
         return
        } 
       
    try {
-    var link = await Link.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}, { linkId: req.body.linkkId }] });
+    var link = await Link.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}] });
     if (!link)
     {
     res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Link object not found and not deleted",req.body.apiPublicKey));
@@ -279,6 +267,79 @@ router.post("/query", async (request, res) => {
     const links = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName });
     if (!links) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No link object found for this clientNr, explorerId and workflowName combination",req.body.apiPublicKey))}
     else {res.status(200).json(links) }
+    }
+    catch (err) {
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
+  }
+});
+
+router.post("/querysourcesandtargets", async (request, res) => {
+
+  const req = await utils.getDecodedBody(request);
+
+  if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+     if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+     if (!req.body.explorerId)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.workflowName)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      } 
+     const mylink = await Link.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,workflowName: req.body.workflowName })
+      if (!mylink)
+       {
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A link object with this workfloName does not exist. Unable to fetch",req.body.apiPublicKey));
+        return
+       } 
+  try {
+    
+    const link = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName });
+    if (!link) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No link object found for this clientNr, explorerId and workflowName combination",req.body.apiPublicKey))}
+    else 
+    {
+      const linksList = link.links
+      // now construct an array of sources and of targets
+      
+      const sources = [];
+      const targets = [];
+
+      linksList.forEach(obj => {
+      sources.push(obj.source);
+      targets.push(obj.target);
+      });
+
+      res.status(200).json({sources: sources, targets: targets}) 
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

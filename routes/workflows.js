@@ -81,6 +81,19 @@ router.post("/register", async (request, res) => {
            description: req.body.description,
          });
          const workflow = await newWorkflow.save();
+
+
+         const newLink = new Link(
+          {
+            clientNr: req.body.clientNr,
+            explorerId: req.body.explorerId,
+            productName: req.body.productName,
+            workflowName: req.body.name,
+            links: [],
+          });
+
+          const link = await newLink.save();
+
          res.status(200).json(workflow);
       }
    
@@ -223,6 +236,15 @@ router.post("/delete", async (request, res) => {
     }
     else
     {
+
+      // delete all tasks associated with the workflow
+
+      await Task.deleteMany({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{ workflowName: req.body.name }] });
+
+      // delete the links associated with the workflow
+
+      await Link.deleteMany({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{ workflowName: req.body.name }] });
+
       res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Workflow object has been deleted",req.body.apiPublicKey));
     }
    }
@@ -497,7 +519,10 @@ router.post("/queryallgivenproduct", async (request, res) => {
               "id": task.taskId, 
               "label": task.name,
               "description": task.description,
-              "apiName": task.apiName
+              "apiName": task.apiName,
+              "symbolType": task.symbolType,
+              "x":task.x,
+              "y":task.y
             }
             mynodes.push(myNodeObject);
             });
@@ -621,7 +646,11 @@ router.post("/queryallgivenproduct", async (request, res) => {
              "id": task.taskId, 
              "label": task.name,
              "description": task.description,
-             "apiName": task.apiName
+             "apiName": task.apiName,
+             "symbolType": task.symbolType,
+             "x":task.x,
+             "y":task.y
+
            }
            mynodes.push(myNodeObject);
            });
@@ -752,7 +781,10 @@ router.post("/queryonegraph", async (request, res) => {
              "id": task.taskId, 
              "label": task.name,
              "description": task.description,
-             "apiName": task.apiName
+             "apiName": task.apiName,
+             "symbolType": task.symbolType,
+             "x":task.x,
+             "y":task.y
            }
            mynodes.push(myNodeObject);
            });

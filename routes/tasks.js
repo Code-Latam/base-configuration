@@ -1,8 +1,13 @@
 const Client = require("../models/Client");
 const Task = require("../models/Task");
+const Link = require("../models/Link");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
+
+function removeNodeConnections(nodeId, connections) {
+   return connections.filter(connection => connection.source !== nodeId && connection.target !== nodeId);
+}
 
 // register Task
 
@@ -84,7 +89,9 @@ router.post("/register", async (request, res) => {
            taskId: req.body.taskId,
            name: req.body.name,
            description:req.body.description,
-           apiName: req.body.apiName
+           apiName: req.body.apiName,
+           x:req.body.x,
+           y:req.body.y
          });
          const task = await newTask.save();
          res.status(200).json(task);
@@ -139,11 +146,6 @@ const req = await utils.getDecodedBody(request);
       return
      } 
 
-     if (!req.body.description)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"description is a required field",req.body.apiPublicKey));
-       return
-      } 
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -222,6 +224,7 @@ router.post("/delete", async (request, res) => {
        } 
       
    try {
+    // first try to delete the task 
     var task = await Task.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}, { taskId: req.body.taskId }] });
     if (!task)
     {
@@ -229,9 +232,33 @@ router.post("/delete", async (request, res) => {
     }
     else
     {
+      // now try to remove all the links associated with that node in the workflow
+
+      // firts fetch the current links object for the workflow
+
+      const mylink = await Link.findOne({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId },{workflowName:req.body.workflowName}] });
+
+      const mylinksList = mylink.links;
+
+      const myNewLinkList = removeNodeConnections( req.body.taskId,mylinksList);
+
+      const myLinkUpdatebody = {
+         clientnr: req.body.clientNr,
+         explorerId: req.body.explorerId,
+         workflowName: req.body.workflowName,
+         links: myNewLinkList
+      }
+
+      const link = await Link.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { workflowName: req.body.workflowName }] }, {
+         $set: myLinkUpdatebody});
+
       res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Task object has been deleted",req.body.apiPublicKey));
     }
+   
    }
+
+
+
   catch (err) {
     res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
     }
@@ -257,26 +284,26 @@ router.post("/query", async (request, res) => {
 
      if (!req.body.clientNr)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      res.status(418).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
       return
      }  
 
      if (!req.body.explorerId)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      res.status(413).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
       return
      } 
 
      if (!req.body.workflowName)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
+      res.status(414).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
       return
      } 
 
 
      if (!req.body.taskId)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
+      res.status(415).json(utils.Encryptresponse(req.encryptresponse,"taskId is a required field",req.body.apiPublicKey));
       return
      } 
 
