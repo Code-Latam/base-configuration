@@ -390,13 +390,10 @@ router.post("/gettree", async (request, res) => {
          });
      
          workflows.forEach((workflow) => {
-          if (productWorkflowsMap[workflow.productName]) {
-            productWorkflowsMap[workflow.productName].push({
-              name: workflow.name,
-              sequence: workflow.sequence,
-            });
-          }
-        });
+           if (productWorkflowsMap[workflow.productName]) {
+             productWorkflowsMap[workflow.productName].push(workflow.name);
+           }
+         });
 
          // Sort workflows for each product based on workflow.sequence
         Object.keys(productWorkflowsMap).forEach((productName) => {
@@ -405,12 +402,8 @@ router.post("/gettree", async (request, res) => {
      
          // Convert the productWorkflowsMap to an array of objects
          const result = Object.entries(productWorkflowsMap).map(([name, workflows]) => {
-          return {
-            name,
-            workflows: workflows.map((workflow) => workflow.name),
-          };
-        });
-
+           return { name, workflows };
+         });
      
          // Send the formatted data as a JSON response
          res.json(result);

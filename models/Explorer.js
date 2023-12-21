@@ -22,14 +22,7 @@ const ExplorerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    apiEndpoint: {
-      type: String,
-      required: true,
-    },
-    apiKey: {
-      type: String
-    },
-    apiToken: {
+    config: {
       type: String
     },
   },

@@ -5,6 +5,7 @@ const Link = require("../models/Link");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
+const Product = require("../models/Product");
 
 // register Task
 
@@ -802,6 +803,156 @@ router.post("/queryonegraph", async (request, res) => {
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
   }
+});
+
+
+router.post("/cloneworkflow", async (request, res) => {
+
+  const req = await utils.getDecodedBody(request);
+
+  console.log("REQUEST BODY OF CLONE");
+  console.log(req.body);
+
+  if (!req.endtoendPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+      return
+     }  
+
+  if (!req.gwokenPass)
+     {
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+      return
+     }  
+
+
+     if (!req.body.clientNr)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      return
+     }  
+
+     if (!req.body.explorerId)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.productName)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"productName is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.destinationProductName)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"destinationProductName is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const destinationProduct = await Product.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,productName: req.body.destinationProductName })
+      if (!destinationProduct)
+       {
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The destination Product does not exist. Unable to clone",req.body.apiPublicKey));
+        return
+       } 
+
+
+
+     if (!req.body.name)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     if (!req.body.newName)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"newName is a required field",req.body.apiPublicKey));
+      return
+     } 
+
+     const targetWorkflow = await Workflow.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,productName: req.body.productName, name: req.body.newName })
+      if (targetWorkflow)
+       {
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A Workflow object with the new target name already exists. Unable to clone",req.body.apiPublicKey));
+        return
+       } 
+
+     const client = await Client.findOne({ clientNr: req.body.clientNr })
+     if (!client)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+       return
+      } 
+     const originalWorkflow = await Workflow.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId ,productName: req.body.productName, name: req.body.name })
+      if (!originalWorkflow)
+       {
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A Workflow object with this name does not exist. Unable to clone",req.body.apiPublicKey));
+        return
+       } 
+
+
+      try {
+        const { clientNr, explorerId, destinationProductName ,productName, name } = req.body;
+    
+        // Find the original workflow
+    
+    
+        // Clone the workflow and update the name
+        const clonedWorkflow = new Workflow({
+          clientNr: originalWorkflow.clientNr,
+          explorerId: originalWorkflow.explorerId,
+          productName: destinationProductName,
+          name: req.body.newName,
+          description: originalWorkflow.description,
+          sequence: originalWorkflow.sequence,
+        });
+    
+        const savedClonedWorkflow = await clonedWorkflow.save();
+    
+        // Find tasks associated with the original workflow
+        const originalTasks = await Task.find({ clientNr, explorerId, workflowName: name });
+    
+        // Clone and update each task
+        const clonedTasks = originalTasks.map(originalTask => {
+          const clonedTask = new Task({
+            clientNr: originalTask.clientNr,
+            explorerId: originalTask.explorerId,
+            workflowName: savedClonedWorkflow.name,
+            taskId: originalTask.taskId,
+            name: originalTask.name,
+            description: originalTask.description,
+            apiName: originalTask.apiName,
+            symbolType: originalTask.symbolType,
+            x: originalTask.x,
+            y: originalTask.y,
+          });
+          return clonedTask.save();
+        });
+    
+        // Wait for all cloned tasks to be saved
+        await Promise.all(clonedTasks);
+
+        // find the original Link
+
+        const originalLink = await Link.findOne({ clientNr, explorerId, workflowName: name });
+
+        const clonedLink = new Link({
+          clientNr: originalLink.clientNr,
+          explorerId: originalLink.explorerId,
+          workflowName: savedClonedWorkflow.name,
+          links: originalLink.links
+        });
+
+        const savedClonedLink = await clonedLink.save();
+
+    
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Workflow cloned succesfully",req.body.apiPublicKey));
+      } catch (error) {
+        console.error(error);
+        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
+      }
+
 });
 
 module.exports = router;

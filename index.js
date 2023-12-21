@@ -27,6 +27,7 @@ const productRoute = require("./routes/products");
 const taskRoute = require("./routes/tasks");
 const linkRoute = require("./routes/links");
 const apiRoute = require("./routes/apis");
+const apiimportRoute = require("./routes/apiimport");
 
 
 const router = express.Router();
@@ -84,6 +85,7 @@ app.use("/api/workflow", workflowRoute);
 app.use("/api/task", taskRoute);
 app.use("/api/link", linkRoute);
 app.use("/api/api", apiRoute);
+app.use("/api/apiimport", apiimportRoute);
 
 
 const port = process.env.PORT || 8800

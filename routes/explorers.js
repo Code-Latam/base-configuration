@@ -68,9 +68,7 @@ router.post("/register", async (request, res) => {
            explorerId: req.body.explorerId,
            name: req.body.name,
            description: req.body.description,
-           apiEndpoint: req.body.apiEndpoint,
-           apiKey: req.body.apiKey,
-           apiToken: req.body.apiToken
+           config: req.body.config,
          });
          const explorer = await newExplorer.save();
          res.status(200).json(explorer);

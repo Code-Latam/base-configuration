@@ -24,6 +24,10 @@ const WorkflowSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    sequence: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );

@@ -4,6 +4,9 @@ const mongoose = require("mongoose");
 const ApiSchema = new mongoose.Schema(
 
   {
+    collectionTag: {
+      type: String,
+    },
     clientNr: {
       type: String,
       required: true,
