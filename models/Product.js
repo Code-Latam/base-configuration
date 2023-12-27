@@ -20,6 +20,19 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    complianceDescription: {
+      type: String,
+      default: "",
+    },
+    sequence: {
+      type: Number,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["Public", "Private"],
+    },
   },
   { timestamps: true }
 );

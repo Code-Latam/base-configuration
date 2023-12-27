@@ -22,7 +22,7 @@ const ExplorerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    config: {
+    yaml: {
       type: String
     },
   },

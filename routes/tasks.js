@@ -89,6 +89,7 @@ router.post("/register", async (request, res) => {
            taskId: req.body.taskId,
            name: req.body.name,
            description:req.body.description,
+           complianceDescription:req.body.complianceDescription,
            apiName: req.body.apiName,
            x:req.body.x,
            y:req.body.y

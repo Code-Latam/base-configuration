@@ -49,6 +49,21 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"Description is a required field",req.body.apiPublicKey));
        return
       } 
+
+      if (!req.body.sequence)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"sequence is a required field",req.body.apiPublicKey));
+       return
+      }
+
+      if (!req.body.status || !["Public", "Private"].includes(req.body.status)) {
+        res.status(412).json(utils.Encryptresponse(
+          req.encryptresponse,
+          "Status is a required field and should be either Public or Private",
+          req.body.apiPublicKey
+        ));
+        return;
+      }
  
 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -74,6 +89,9 @@ router.post("/register", async (request, res) => {
            explorerId: req.body.explorerId,
            productName: req.body.productName,
            description: req.body.description,
+           complianceDescription: req.body.complianceDescription,
+           sequence: req.body.sequence,
+           status: req.body.status
          });
          const product = await newProduct.save();
          res.status(200).json(product);
@@ -383,7 +401,8 @@ router.post("/gettree", async (request, res) => {
      
          // Create an object to map product names to their workflows
          const productWorkflowsMap = {};
-     
+        // sort the product on sequence number in ascending order
+         products.sort((a, b) => a.sequence - b.sequence);
          // Populate the productWorkflowsMap
          products.forEach((product) => {
            productWorkflowsMap[product.productName] = [];
@@ -402,6 +421,8 @@ router.post("/gettree", async (request, res) => {
         Object.keys(productWorkflowsMap).forEach((productName) => {
         productWorkflowsMap[productName].sort((a, b) => a.sequence - b.sequence);
         });
+
+
      
          // Convert the productWorkflowsMap to an array of objects
          const result = Object.entries(productWorkflowsMap).map(([name, workflows]) => {

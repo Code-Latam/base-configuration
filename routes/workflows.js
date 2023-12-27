@@ -54,6 +54,22 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"Description is a required field",req.body.apiPublicKey));
        return
       } 
+
+      if (!req.body.sequence)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"sequence is a required field",req.body.apiPublicKey));
+       return
+      }
+
+      if (!req.body.status || !["Public", "Private"].includes(req.body.status)) {
+        res.status(412).json(utils.Encryptresponse(
+          req.encryptresponse,
+          "Status is a required field and should be either Public or Private",
+          req.body.apiPublicKey
+        ));
+        return;
+      }
+ 
  
 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -80,6 +96,9 @@ router.post("/register", async (request, res) => {
            productName: req.body.productName,
            name: req.body.name,
            description: req.body.description,
+           complianceDescription: req.body.complianceDescription,
+           sequence:req.body.sequence,
+           status: req.body.status
          });
          const workflow = await newWorkflow.save();
 
@@ -906,6 +925,8 @@ router.post("/cloneworkflow", async (request, res) => {
           name: req.body.newName,
           description: originalWorkflow.description,
           sequence: originalWorkflow.sequence,
+          complianceDescription: originalWorkflow.complianceDescription,
+          status: originalWorkflow.status
         });
     
         const savedClonedWorkflow = await clonedWorkflow.save();

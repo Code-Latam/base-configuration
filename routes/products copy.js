@@ -74,6 +74,8 @@ router.post("/register", async (request, res) => {
            explorerId: req.body.explorerId,
            productName: req.body.productName,
            description: req.body.description,
+           complianceDescription: req.body.complianceDescription,
+           sequence: req.body.sequence
          });
          const product = await newProduct.save();
          res.status(200).json(product);
@@ -390,10 +392,13 @@ router.post("/gettree", async (request, res) => {
          });
      
          workflows.forEach((workflow) => {
-           if (productWorkflowsMap[workflow.productName]) {
-             productWorkflowsMap[workflow.productName].push(workflow.name);
-           }
-         });
+          if (productWorkflowsMap[workflow.productName]) {
+            productWorkflowsMap[workflow.productName].push({
+              name: workflow.name,
+              sequence: workflow.sequence,
+            });
+          }
+        });
 
          // Sort workflows for each product based on workflow.sequence
         Object.keys(productWorkflowsMap).forEach((productName) => {
@@ -402,8 +407,12 @@ router.post("/gettree", async (request, res) => {
      
          // Convert the productWorkflowsMap to an array of objects
          const result = Object.entries(productWorkflowsMap).map(([name, workflows]) => {
-           return { name, workflows };
-         });
+          return {
+            name,
+            workflows: workflows.map((workflow) => workflow.name),
+          };
+        });
+
      
          // Send the formatted data as a JSON response
          res.json(result);

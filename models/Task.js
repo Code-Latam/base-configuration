@@ -28,6 +28,10 @@ const TaskSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    complianceDescription: {
+      type: String,
+      default: "",
+    },
     apiName: {
       type: String,
       default:""
