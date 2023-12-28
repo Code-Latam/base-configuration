@@ -480,8 +480,18 @@ router.post("/queryallgivenproduct", async (request, res) => {
         return
        } 
    try {
-     
-     const workflows = await Workflow.find({ clientNr: req.body.clientNr,explorerId: req.body.explorerId});
+      const {clientNr, explorerId, status} = req.body ;
+      // fetch workflows depending on status:
+      let query = { clientNr, explorerId };
+      if (status === "Private" || status === "Public") {
+        query.status = status;
+      } else if (status === "All") {
+        // Omitting the status property for "All"
+      }
+     const workflows = await Workflow.find(query);
+     // fetch product depending on status
+
+     // remove workflows for which there is no product name in products
 
      if (!workflows) 
       {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No Workflow object found for this clientNr",req.body.apiPublicKey))
@@ -607,8 +617,15 @@ router.post("/queryallgivenproduct", async (request, res) => {
        return
       } 
   try {
-    
-    const workflows = await Workflow.find({ clientNr: req.body.clientNr,explorerId: req.body.explorerId, productName: req.body.productName});
+    const {clientNr, explorerId, productName, status} = req.body ;
+      // fetch workflows depending on status:
+      let query = { clientNr, explorerId, productName };
+      if (status === "Private" || status === "Public") {
+        query.status = status;
+      } else if (status === "All") {
+        // Omitting the status property for "All"
+      }
+    const workflows = await Workflow.find(query);
 
     if (!workflows) 
      {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No Workflow object found for this clientNr, explorerId and productName",req.body.apiPublicKey))

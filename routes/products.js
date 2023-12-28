@@ -393,11 +393,19 @@ router.post("/gettree", async (request, res) => {
        } 
    
        try {
-         const { clientNr, explorerId } = req.body; // Get clientNr and explorerId from the request body
+         const { clientNr, explorerId, status } = req.body; // Get clientNr and explorerId from the request body
      
          // Query the 'products' and 'workflow' collections based on clientNr and explorerId
-         const products = await Product.find({ clientNr, explorerId });
-         const workflows = await Workflow.find({ clientNr, explorerId });
+          let query = { clientNr, explorerId };
+          if (status === "Private" || status === "Public") {
+            query.status = status;
+          } else if (status === "All") {
+            // Omitting the status property for "All"
+          }
+
+          const products = await Product.find(query );    
+          const workflows = await Workflow.find(query);
+         
      
          // Create an object to map product names to their workflows
          const productWorkflowsMap = {};
