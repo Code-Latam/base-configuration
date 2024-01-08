@@ -404,10 +404,12 @@ router.post("/queryorderedapi", async (request, res) => {
      {
       // first order the tasks in an array
       const taskNames = findOrder(link);
+      console.log("TAKNAMES");
+      console.log(taskNames);
       // Now make an array of the assoicated api names
       const apiNamesArray = [];
       for (const taskName of taskNames) {
-         const taskData = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, taskId:taskName })
+         const taskData = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, taskId:taskName, workflowName:req.body.workflowName })
          if (taskData) {
            apiNamesArray.push(taskData.apiName);
          }

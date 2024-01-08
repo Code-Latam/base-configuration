@@ -662,6 +662,9 @@ router.post("/queryallgivenproduct", async (request, res) => {
      }
    };
    
+   // order workflows by sequence number
+
+   workflows.sort((a, b) => a.sequence - b.sequence);
     
    for (const workflow of workflows)
     {  
