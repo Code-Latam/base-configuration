@@ -86,7 +86,7 @@ try {
       const newText = promptTemplate.replace('{context}', chromaResult);
       const mynewprompt = newText.replace('{question}', prompt);
 
-      // get answer from chatgpt
+      // get answer from chatgpt GPT TURBO MODEL
 
       const response = await axios({
         method: "post",
