@@ -371,12 +371,46 @@ myencryptedreturbody.message = ecoded64encryptedMessage;
 return myencryptedreturbody;
 
 /**** END OF Encrypt message with symetric AES key and set body message variable ****/
-
-
  }
+
+ function haveCommonElement(arrayA, arrayB) {
+  // Using the some() method to check if at least one common element exists
+  return arrayA.some(element => arrayB.includes(element));
+}
+
+ function hasAccessRights(appname, usergroups, userexplorers, targetExplorer)
+ {
+  console.log("IN FUNCTION hasAccesRights");
+
+  console.log(appname);
+  console.log(usergroups);
+  console.log(userexplorers);
+  console.log(targetExplorer);
+ 
+  const apiFnyGroups = ["apiFnyDesigners", "apiFnyUsers"];
+  const AiStudioGroups = ['chatbotDesigners']; 
+  const chatbotGroups = ['chatbotUsers'];
+ 
+
+  switch (appname) {
+    case "APIFNY":
+      return haveCommonElement(usergroups, apiFnyGroups) && haveCommonElement(userexplorers, targetExplorer)
+      break;
+    case "AISTUDIO":
+      return haveCommonElement(usergroups, AiStudioGroups)
+      break;
+    case "CHATBOT":
+      return haveCommonElement(usergroups, chatbotGroups)
+      break;  
+    default:
+      return false;
+  }
+ }
+
 
   module.exports.gwokenCorrect = gwokenCorrect;
   module.exports.generateIds = generateIds;
   module.exports.validopenai = validopenai;
   module.exports.getDecodedBody = getDecodedBody;
   module.exports.Encryptresponse = Encryptresponse;
+  module.exports.hasAccessRights = hasAccessRights;

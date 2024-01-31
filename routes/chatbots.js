@@ -318,6 +318,7 @@ router.post("/register", async (request, res) => {
       email:  req.body.email,
       password:  hashedpassword,
       isAdmin:  true,
+      groups:["apiFnyDesigners", "chatbotDesigners"]
       });
     console.log(newUser)
     // save new user
@@ -329,10 +330,10 @@ router.post("/register", async (request, res) => {
     const embedder = new OpenAIEmbeddingFunction(req.body.openaiKey); 
     const collection = await chroma_client.createCollection(req.body.name, {}, embedder);
 
-    const resp = await collection.add(["GWOCU"],
+    const resp = await collection.add(["CHATBOTKIND"],
       undefined,
       ["author"],
-      [" This is a Gwocu Chatbot"], ) ;
+      [" I am a happy chatbot"], ) ;
     
     console.log(resp);
 
@@ -802,6 +803,7 @@ router.post("/test", async (req, res) => {
       const myindexes = utils.generateIds(req.body.documents.length)
 
      try {
+        console.log("In try loop");
         const chroma_client = new ChromaClient(CHROMA_URL);
         const embedder = new OpenAIEmbeddingFunction(mychatbot.openaiKey)
         const collection = await chroma_client.getCollection(mychatbot.name, embedder)

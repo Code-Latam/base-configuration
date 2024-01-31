@@ -33,6 +33,14 @@ const ClientSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    logo: {
+      type: String,
+      default: "",
+    },
+    url: {
+      type: String,
+      default: "",
+    },
     gwoken: {
       type: Boolean,
       default: false,
