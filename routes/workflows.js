@@ -548,6 +548,8 @@ router.post("/queryallgivenproduct", async (request, res) => {
             const myNodeObject = { 
               "id": task.taskId, 
               "label": task.name,
+              "taskType": task.taskType,
+              "thirdparty": task.thirdparty,
               "description": task.description,
               "apiName": task.apiName,
               "symbolType": task.symbolType,
@@ -685,6 +687,8 @@ router.post("/queryallgivenproduct", async (request, res) => {
            const myNodeObject = { 
              "id": task.taskId, 
              "label": task.name,
+             "taskType": task.taskType,
+             "thirdparty":task.thirdparty,
              "description": task.description,
              "apiName": task.apiName,
              "symbolType": task.symbolType,
@@ -822,6 +826,8 @@ router.post("/queryonegraph", async (request, res) => {
              "label": task.name,
              "description": task.description,
              "apiName": task.apiName,
+             "taskType": task.taskType,
+             "thirdparty": task.thirdparty,
              "symbolType": task.symbolType,
              "x":task.x,
              "y":task.y
@@ -962,6 +968,8 @@ router.post("/cloneworkflow", async (request, res) => {
             workflowName: savedClonedWorkflow.name,
             taskId: originalTask.taskId,
             name: originalTask.name,
+            taskType: originalTask.taskType,
+            thirdparty: originalTask.thirdparty,
             description: originalTask.description,
             apiName: originalTask.apiName,
             symbolType: originalTask.symbolType,

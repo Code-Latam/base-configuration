@@ -24,6 +24,14 @@ const TaskSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    taskType: {
+      type: String,
+      default: "normal",
+    },
+    thirdparty: {
+      type: String,
+      default: "none",
+    },
     description: {
       type: String,
       required: true,

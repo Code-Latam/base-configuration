@@ -1,8 +1,7 @@
 const Client = require("../models/Client");
-const Explorer = require("../models/Explorer");
+const Thirdparty = require("../models/Thirdparty");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
-const bcrypt = require("bcrypt");
 
 // register explorer
 
@@ -27,12 +26,6 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
- 
-      if (!req.body.explorerId)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-       return
-      } 
       if (!req.body.name)
       {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
@@ -52,26 +45,25 @@ router.post("/register", async (request, res) => {
         return
        } 
        
-      const myexplorer = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId })
-      if (myexplorer)
+      const mythirdparty = await Thirdparty.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      if (mythirdparty)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An explorer object with this explorer ID allready exists for this client",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A third party object with this name allready exists for this client",req.body.apiPublicKey));
         return
        } 
  
    try 
    {
    
-      const newExplorer = new Explorer(
+      const newThirdparty = new Thirdparty(
          {
            clientNr: req.body.clientNr,
-           explorerId: req.body.explorerId,
            name: req.body.name,
            description: req.body.description,
            yaml: req.body.yaml,
          });
-         const explorer = await newExplorer.save();
-         res.status(200).json(explorer);
+         const thirdparty = await newThirdparty.save();
+         res.status(200).json(thirdparty);
       }
    
     catch (err) {
@@ -105,32 +97,26 @@ const req = await utils.getDecodedBody(request);
       return
      }  
 
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
-
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
-      const myexplorer = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId })
-      if (!myexplorer)
+      const mythirdparty = await Thirdparty.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      if (!mythirdparty)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An explorer object with this explorer ID does not exist. Unable to update",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A thirdparty object with this name does not exist. Unable to update",req.body.apiPublicKey));
         return
        } 
 
 
   try {
 
-    const explorer = await Explorer.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }] }, {
+    const thirdparty = await Thirdparty.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { name: req.body.name }] }, {
     $set: req.body});
-    if (!explorer) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The explorer object has not been updated. Not found!",req.body.apiPublicKey))}
-    else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Explorer object has been updated.",req.body.apiPublicKey)) }
+    if (!thirdparty) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The thirdparty object has not been updated. Not found!",req.body.apiPublicKey))}
+    else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Thirdparty object has been updated.",req.body.apiPublicKey)) }
   } catch (err) {
     res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
   }
@@ -160,11 +146,7 @@ router.post("/delete", async (request, res) => {
       return
      }  
 
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
+    
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -172,22 +154,22 @@ router.post("/delete", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const myexplorer = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId })
-      if (!myexplorer)
+     const mythirdparty = await Thirdparty.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      if (!mythirdparty)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An explorer object with this explorer ID does not exist. Unable to delete",req.body.apiPublicKey));
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An thirdparty object with this name does not exist. Unable to delete",req.body.apiPublicKey));
         return
        } 
       
    try {
-    var explorer = await Explorer.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }] });
-    if (!explorer)
+    var thirdparty = await Thirdparty.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { name: req.body.name }] });
+    if (!thirdparty)
     {
-    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Explorer object not found and not deleted",req.body.apiPublicKey));
+    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Thirdparty object not found and not deleted",req.body.apiPublicKey));
     }
     else
     {
-      res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Explorer object has been deleted",req.body.apiPublicKey));
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Thirdparty object has been deleted",req.body.apiPublicKey));
     }
    }
   catch (err) {
@@ -219,11 +201,7 @@ router.post("/query", async (request, res) => {
       return
      }  
 
-     if (!req.body.explorerId)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
-      return
-     } 
+    
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
@@ -231,17 +209,17 @@ router.post("/query", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const myexplorer = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId })
-      if (!myexplorer)
+     const mythirdparty = await Thirdparty.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      if (!mythirdparty)
        {
-        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"An explorer object with this explorer ID does not exist. Unable to fetch",req.body.apiPublicKey));
+        res.status(404).json(utils.Encryptresponse(req.encryptresponse,"A thirdparty object with this name does not exist. Unable to fetch",req.body.apiPublicKey));
         return
        } 
   try {
     
-    const explorers = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId });
-    if (!explorers) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No explorer object found for this clientNr and explorerId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(explorers) }
+    const thirdparties = await Thirdparty.findOne({ clientNr: req.body.clientNr, name: req.body.name });
+    if (!thirdparties) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No thirdparty object found for this clientNr and name combination",req.body.apiPublicKey))}
+    else {res.status(200).json(thirdparties) }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -282,9 +260,9 @@ router.post("/queryall", async (request, res) => {
        } 
    try {
      
-     const explorers = await Explorer.find({ clientNr: req.body.clientNr});
-     if (!explorers) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No explorer object found for this clientNr",req.body.apiPublicKey))}
-     else {res.status(200).json(explorers) }
+     const thirdparties = await Thirdparty.find({ clientNr: req.body.clientNr});
+     if (!thirdparties) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No explorer object found for this clientNr",req.body.apiPublicKey))}
+     else {res.status(200).json(thirdparties) }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

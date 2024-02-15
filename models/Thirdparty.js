@@ -1,14 +1,10 @@
 const mongoose = require("mongoose");
 
 
-const ExplorerSchema = new mongoose.Schema(
+const ThirdpartySchema = new mongoose.Schema(
 
   {
     clientNr: {
-      type: String,
-      required: true,
-    },
-    explorerId: {
       type: String,
       required: true,
     },
@@ -24,10 +20,10 @@ const ExplorerSchema = new mongoose.Schema(
     },
     yaml: {
       type: String,
-      default:""
+      default: "",
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Explorer", ExplorerSchema);
+module.exports = mongoose.model("Thirdparty", ThirdpartySchema);
