@@ -20,6 +20,8 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
        // Map the POSTMAN data to your ApiSchema
 
        const query = { name: item.name, clientNr:clientNr };
+       console.log("ITEM");
+       console.log(item);
        const apiData = {
          collectionTag: collectionName,
          clientNr: clientNr, 
@@ -28,7 +30,8 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
          urlRoute: item.request.url.raw, // ok
          headers: item.request.header.map(header => header.key + ': ' + header.value), // ok
          method: item.request.method, // ok
-         requestBody: item.request.body ? JSON.parse(item.request.body.raw) : {},
+         requestBody: item.request.body && item.request.body.raw !== "" ? JSON.parse(item.request.body.raw) : {},   
+         //requestBody: item.request.body ? JSON.parse(item.request.body.raw) : {},
          requestBodyType: item.request.body ? item.request.body.mode : 'none',
          responseBodyType: 'JSON', // Define how you want to set this
          parametersDescription: {}, // Define how you want to set this
@@ -81,6 +84,8 @@ router.post("/postman", async (request, res) => {
  
        try {
          // Read the Postman data from a file
+         console.log("URL ROUTE FOR FILE");
+         console.log(req.body.url);
          const postmanDataResponse = await axios.get(req.body.url);
          const postmanData = postmanDataResponse.data;
 
