@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 
-const ApiSchema = new mongoose.Schema(
+const CustomUserApiSchema = new mongoose.Schema(
 
   {
     collectionTag: {
@@ -15,6 +15,15 @@ const ApiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    chatbotKey: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      max: 50,
+    },
     description: {
       type: String,
       required: true,
@@ -22,9 +31,6 @@ const ApiSchema = new mongoose.Schema(
     urlRoute: {
       type: String,
     required: true,
-    },
-    resourcePath: {
-      type: String,
     },
     headers: {
       type: [String],
@@ -40,12 +46,10 @@ const ApiSchema = new mongoose.Schema(
     requestBodyType: {
       type: String,
       required: true,
-      default: "JSON",
     },
     responseBodyType: {
       type: String,
       required: true,
-      default: "JSON",
     },
     parametersDescription: {
       type: mongoose.Schema.Types.Mixed, // Allow any type of objects in the array
@@ -55,6 +59,6 @@ const ApiSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-ApiSchema.index({ clientNr: 1, name: 1 }, { unique: true });
+CustomUserApiSchema.index({ clientNr: 1, name: 1, chatbotKey: 1, email: 1 }, { unique: true });
 
-module.exports = mongoose.model("Api", ApiSchema);
+module.exports = mongoose.model("CustomUserApi", CustomUserApiSchema);

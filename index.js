@@ -28,6 +28,7 @@ const productRoute = require("./routes/products");
 const taskRoute = require("./routes/tasks");
 const linkRoute = require("./routes/links");
 const apiRoute = require("./routes/apis");
+const folderRoute = require("./routes/folders");
 const apiimportRoute = require("./routes/apiimport");
 
 
@@ -87,6 +88,7 @@ app.use("/api/workflow", workflowRoute);
 app.use("/api/task", taskRoute);
 app.use("/api/link", linkRoute);
 app.use("/api/api", apiRoute);
+app.use("/api/folder", folderRoute);
 app.use("/api/apiimport", apiimportRoute);
 
 

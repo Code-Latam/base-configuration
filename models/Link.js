@@ -13,7 +13,28 @@ const linkObjectSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true
+  },
+  passLinkParameters: {
+    type: Boolean,
+    default: false,
+  },
+  resourcePath: {
+    type: String,
+    default:""
+  },
+  pathParameters: {
+    type: String,
+    default:"{}"
+  },
+  queryParameters: {
+    type: String,
+    default:"{}"
+  },
+  requestbodyParameters: {
+    type: String,
+    default:"{}"
   }
+  
 });
 
 const LinkSchema = new mongoose.Schema(

@@ -1,8 +1,10 @@
 const Client = require("../models/Client");
+const Folder = require("../models/Folder");
 const Workflow = require("../models/Workflow");
 const Explorer = require("../models/Explorer");
 const Api = require("../models/Api");
 const utils = require("../utils/utils.js");
+const folderutils = require("../utils/folderutils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 
@@ -19,7 +21,7 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
      } else { // This is a request
        // Map the POSTMAN data to your ApiSchema
 
-       const query = { name: item.name, clientNr:clientNr };
+       
        console.log("ITEM");
        console.log(item);
        const apiData = {
@@ -37,12 +39,67 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
          parametersDescription: {}, // Define how you want to set this
        };
  
+
+
        // Create a new Api document
+       const query = { name: item.name, clientNr:clientNr };
        const options = { upsert: true, new: true, setDefaultsOnInsert: true };
        await Api.findOneAndUpdate(query, apiData, options);
+
+       // update folders:
+
+       updateFolderStructure(clientNr, apiData.name)
+
      }
    }
  };
+
+async function updateFolderStructure(clientNr, apiName)
+
+{
+   // get the folder structure:
+   try
+   {
+      console.log("WE ARE IN")
+      const query = { clientNr:clientNr };
+      console.log(`CLIENT NR:`);
+      console.log(query);
+      console.log(`APINAME: ${apiName}`);
+      
+      const clientFolders = await Folder.findOne(query);
+      
+      if (!clientFolders)
+      {
+         return
+      }
+      console.log(`APINAME: ${apiName}`);
+      const items = clientFolders.items;
+      console.log("ITEMS");
+      console.log(items);
+      const apifound = folderutils.findApiInFolder(apiName, items);
+      console.log("APIFOUND");
+      console.log(apifound);
+      if (items && !apifound)
+      {
+         
+        const newItems = folderutils.addChildToFolder(apiName, "Unassigned", items );
+        console.log("NEWITEMS");
+        console.log(newItems);
+        if (!(Object.keys(newItems).length === 0))
+        {
+         console.log("We ARE UPDATING");
+         await Folder.findOneAndUpdate(query, { $set: { items: newItems } });
+        }
+
+      }
+
+   }
+   catch(error)
+   {
+      console.log ("an error occured when updating folder structure")
+   }
+
+}
 
 // Import POSTMAN API definition file
 
@@ -170,6 +227,8 @@ router.post("/openapi", async (request, res) => {
             // Create a new Api document
             const options = { upsert: true, new: true, setDefaultsOnInsert: true };
             await Api.findOneAndUpdate(query, apiData, options);
+
+            updateFolderStructure(clientNr, apiData.name)
          }
       }
    };
