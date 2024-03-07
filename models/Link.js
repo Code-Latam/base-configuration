@@ -18,21 +18,17 @@ const linkObjectSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  resourcePath: {
-    type: String,
-    default:""
-  },
   pathParameters: {
-    type: String,
-    default:"{}"
+    type: mongoose.Schema.Types.Mixed, // Define requestBody as an object
+    default: {}, // Default value is an empty object
   },
   queryParameters: {
-    type: String,
-    default:"{}"
+    type: mongoose.Schema.Types.Mixed, // Define requestBody as an object
+    default: {}, // Default value is an empty object
   },
   requestbodyParameters: {
-    type: String,
-    default:"{}"
+    type: mongoose.Schema.Types.Mixed, // Define requestBody as an object
+    default: {}, // Default value is an empty object
   }
   
 });

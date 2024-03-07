@@ -89,7 +89,6 @@ router.post("/register", async (request, res) => {
            taskId: req.body.taskId,
            name: req.body.name,
            taskType: req.body.taskType,
-           thirdparty: req.body.thirdparty,
            description:req.body.description,
            complianceDescription:req.body.complianceDescription,
            apiName: req.body.apiName,

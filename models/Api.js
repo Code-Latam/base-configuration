@@ -15,6 +15,10 @@ const ApiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    thirdparty: {
+      type: String,
+      default: "none",
+    },
     description: {
       type: String,
       required: true,
