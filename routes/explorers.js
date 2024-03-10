@@ -1,5 +1,6 @@
 const Client = require("../models/Client");
 const Explorer = require("../models/Explorer");
+const Yaml = require("../models/Yaml");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
@@ -61,6 +62,14 @@ router.post("/register", async (request, res) => {
  
    try 
    {
+
+      if (!req.body.yaml)
+      { // Yaml not provided, take default value
+
+         const yaml = await Yaml.findOne({ yamlId: "1" });
+         req.body.yaml = yaml.yaml ;
+
+      }
    
       const newExplorer = new Explorer(
          {

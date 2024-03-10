@@ -1,4 +1,5 @@
 const Client = require("../models/Client");
+const Folder = require("../models/Folder");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
@@ -112,7 +113,7 @@ router.post("/queryall", async (req, res) => {
 
 
 router.post("/register", async (req, res) => {
-
+ console.log("WE ARE IN REGISTER APUI");
   const salt = await bcrypt.genSalt(10);
   const hashedpassword = await bcrypt.hash(req.body.password, salt);
 
@@ -154,6 +155,43 @@ router.post("/register", async (req, res) => {
 
     //save client and
     const client = await newClient.save();  
+
+    // create folders to store APIS for client
+    const documentStructure = {
+      clientNr: req.body.clientNr,
+      items: {
+        root: {
+          index: "root",
+          isFolder: true,
+          children: ["MyFolders", "Unassigned"],
+          data: "Root item"
+        },
+        Unassigned: {
+          index: "Unassigned",
+          isFolder: true,
+          children: [],
+          data: "Unassigned Apis"
+        },
+        MyFolders: {
+          index: "MyFolders",
+          isFolder: true,
+          children: [],
+          data: "MyFolders"
+        },
+      },
+    };
+
+    
+
+    const newFolder = new Folder(documentStructure);
+    console.log("hello1");
+    try {
+      const folder = await newFolder.save();
+      console.log('Folder created:', folder);
+    } catch (error) {
+      console.error('Error creating folder:', error);
+    }
+
 
     res.status(200).json(client);
   } catch (err) {

@@ -30,7 +30,9 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
          name: item.name, // ok
          description: item.request.description || 'none', // ok
          urlRoute: item.request.url.raw, // ok
-         headers: item.request.header.map(header => header.key + ': ' + header.value), // ok
+         headers: [...item.request.header.map(header => header.key + ': ' + header.value), 'Content-Type: application/json'],
+
+         // headers: item.request.header.map(header => header.key + ': ' + header.value), // ok
          method: item.request.method, // ok
          requestBody: item.request.body && item.request.body.raw !== "" ? JSON.parse(item.request.body.raw) : {},   
          //requestBody: item.request.body ? JSON.parse(item.request.body.raw) : {},
@@ -76,7 +78,7 @@ async function updateFolderStructure(clientNr, apiName)
       const items = clientFolders.items;
       console.log("ITEMS");
       console.log(items);
-      const apifound = folderutils.findApiInFolder(apiName, items);
+      const apifound = folderutils.findApiInFolder(items, apiName);
       console.log("APIFOUND");
       console.log(apifound);
       if (items && !apifound)
