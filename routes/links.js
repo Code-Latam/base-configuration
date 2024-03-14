@@ -9,7 +9,11 @@ const bcrypt = require("bcrypt");
 // register Task
 
 router.post("/register", async (request, res) => {
+
+   console.log("IN LINKS");
    const req = await utils.getDecodedBody(request);
+
+   console.log(req.body);
  
    if (!req.endtoendPass)
       {
@@ -22,7 +26,7 @@ router.post("/register", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
        return
       }  
- 
+   
  
    if (!req.body.clientNr)
       {
@@ -40,15 +44,14 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"workflowName is a required field",req.body.apiPublicKey));
        return
       } 
-
+  
       if (!req.body.links)
       {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"links is a required object field",req.body.apiPublicKey));
        return
       } 
 
-
-
+      
       const client = await Client.findOne({ clientNr: req.body.clientNr })
       if (!client)
        {
@@ -56,15 +59,21 @@ router.post("/register", async (request, res) => {
         return
        } 
        
-      const mylink = await Link.findOne({ clientNr: req.body.clientNr,explorerId: req.body.explorerId , workflowName:req.body.workflowName })
+      
+       // const mylink = await Link.findOne({ clientNr: req.body.clientNr,explorerId: req.body.explorerId , workflowName:req.body.workflowName })
+       const mylink = null;
+      
+
       if (mylink)
        {
+       
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A link object with this clientNr, explorer Id and workflowName allready exists",req.body.apiPublicKey));
         return
        } 
- 
+      
    try 
    {
+
    
       const newLink = new Link(
          {
@@ -78,6 +87,7 @@ router.post("/register", async (request, res) => {
       }
    
     catch (err) {
+      console.log(err.message);
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
      }
    
