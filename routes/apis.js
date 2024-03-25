@@ -61,24 +61,12 @@ router.post("/registercustom", async (request, res) => {
    {
       const query = {  clientNr: req.body.clientNr, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
       const myCustomUserApiData = {
-         collectionTag: req.body.collectionTag,
-         clientNr: req.body.clientNr,
-         name: req.body.name,
-         thirdParty:req.body.thirdParty,
-         chatbotKey: req.body.chatbotKey,
-         email: req.body.email,
-         description: req.body.description,
-         urlRoute: req.body.urlRoute,
-         headers: req.body.headers,
-         method: req.body.method,
-         requestBodyType: req.body.requestBodyType,
-         responseBodyType: req.body.responseBodyType,
-         parametersDescription: req.body.parametersDescription, 
+         ...req.body
       };
      
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-      const customerUserApi = await CustomUserApi.findOneAndUpdate(query, myCustomUserApiData, options);
-      res.status(200).json(customerUserApi);
+      const customUserApi = await CustomUserApi.findOneAndUpdate(query, myCustomUserApiData, options);
+      res.status(200).json(customUserApi);
       }
    
     catch (err) {
@@ -511,7 +499,31 @@ router.post("/query", async (request, res) => {
     
     const api = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name });
     if (!api) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API object found for this clientNr and name combination",req.body.apiPublicKey))}
-    else {res.status(200).json(api) }
+    else // an API was found
+    { 
+      // check if this is a request that could return a custom API
+      if (req.body.custom !== undefined && req.body.custom === true )
+      {
+         // fetch the custom value using email and chatbotkey
+         const customApi = await CustomUserApi.findOne({ clientNr: req.body.clientNr, name: req.body.name, email:req.body.email, chatbotKey:req.body.chatbotKey });
+         if (customApi)
+         { 
+            res.status(200).json(customApi)
+            return
+         }
+         else
+         {
+            // no custom api found
+            res.status(200).json(api)
+            return
+         }
+      }
+      else
+      {
+         res.status(200).json(api)
+         return
+      } 
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

@@ -15,14 +15,9 @@ const CustomUserApiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    chatbotKey: {
+    thirdparty: {
       type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      max: 50,
+      default: "none",
     },
     description: {
       type: String,
@@ -31,6 +26,9 @@ const CustomUserApiSchema = new mongoose.Schema(
     urlRoute: {
       type: String,
     required: true,
+    },
+    resourcePath: {
+      type: String,
     },
     headers: {
       type: [String],
@@ -54,6 +52,15 @@ const CustomUserApiSchema = new mongoose.Schema(
     parametersDescription: {
       type: mongoose.Schema.Types.Mixed, // Allow any type of objects in the array
       default: {}, // Default value is an empty object
+    },
+    chatbotKey: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      max: 50,
     },
   },
   { timestamps: true }
