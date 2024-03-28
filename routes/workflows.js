@@ -966,7 +966,7 @@ router.post("/cloneworkflow", async (request, res) => {
             clientNr: originalTask.clientNr,
             explorerId: originalTask.explorerId,
             workflowName: savedClonedWorkflow.name,
-            taskId: originalTask.taskId,
+            taskId: "CLONE_" + originalTask.taskId,
             name: originalTask.name,
             taskType: originalTask.taskType,
             thirdparty: originalTask.thirdparty,
@@ -986,11 +986,18 @@ router.post("/cloneworkflow", async (request, res) => {
 
         const originalLink = await Link.findOne({ clientNr, explorerId, workflowName: name });
 
+        const clonedLinks = originalLink.links.map(link => ({
+          ...link,
+          source: `CLONE_${link.source}`,
+          target: `CLONE_${link.target}`
+        }));
+        
+
         const clonedLink = new Link({
           clientNr: originalLink.clientNr,
           explorerId: originalLink.explorerId,
           workflowName: savedClonedWorkflow.name,
-          links: originalLink.links
+          links: clonedLinks
         });
 
         const savedClonedLink = await clonedLink.save();

@@ -203,13 +203,15 @@ router.post("/openapi", async (request, res) => {
    const processPaths = async (paths, clientNr, explorerId, collectionName) => {
       for (const [path, methods] of Object.entries(paths)) {
          for (const [method, details] of Object.entries(methods)) {
-            const operationId = details.operationId || utils.generateUniqueId();
+            // const operationId = details.operationId || utils.generateUniqueId();
+            const uniqueName = `${method.toLowerCase()}_${path.replace(/\//g, '_')}`; // Example: get_v1_payments
+
    
-            const query = { name: operationId, clientNr: clientNr };
+            const query = { name: uniqueName, clientNr: clientNr };
             const apiData = {
                collectionTag: collectionName,
                clientNr: clientNr,
-               name: operationId,
+               name: uniqueName,
                description: details.description || 'none',
                urlRoute: path,
                headers: details.parameters
@@ -292,7 +294,7 @@ router.post("/openapi", async (request, res) => {
       const collectionName = openApiData.info.title;
 
       // Validate the OpenAPI Swagger file
-      await SwaggerParser.validate(openApiData);
+      // await SwaggerParser.validate(openApiData);
 
       // Process each path and operation
       await processPaths(openApiData.paths, req.body.clientNr, req.body.explorerId, collectionName);
