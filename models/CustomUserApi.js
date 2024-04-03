@@ -62,6 +62,10 @@ const CustomUserApiSchema = new mongoose.Schema(
       required: true,
       max: 50,
     },
+    userClientNr: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );

@@ -23,9 +23,9 @@ router.post("/registercustom", async (request, res) => {
       }  
  
  
-   if (!req.body.clientNr)
+   if (!req.body.userClientNr)
       {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"userClientNr is a required field",req.body.apiPublicKey));
        return
       }  
  
@@ -50,19 +50,16 @@ router.post("/registercustom", async (request, res) => {
 
  
 
-      const api = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name })
-      if (!api)
-       {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"There is no default API associated with this CustomAPI request",req.body.apiPublicKey));
-        return
-       }     
+          
  
    try 
    {
-      const query = {  clientNr: req.body.clientNr, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
+      const query = {  userClientNr: req.body.userClientNr, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
       const myCustomUserApiData = {
          ...req.body
       };
+
+      console.log(req.body);
      
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
       const customUserApi = await CustomUserApi.findOneAndUpdate(query, myCustomUserApiData, options);
@@ -92,9 +89,9 @@ router.post("/registercustom", async (request, res) => {
       }  
  
  
-   if (!req.body.clientNr)
+   if (!req.body.userClientNr)
       {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"userClientNr is a required field",req.body.apiPublicKey));
        return
       }  
  
@@ -119,7 +116,7 @@ router.post("/registercustom", async (request, res) => {
  
    try 
    {
-      const query = { clientNr: req.body.clientNr, name: req.body.name, chatbotKey: req.body.chatbotKey, email: req.body.email };
+      const query = { userClientNr: req.body.userClientNr, name: req.body.name, chatbotKey: req.body.chatbotKey, email: req.body.email };
       const customerUserApi = await CustomUserApi.findOneAndDelete(query);
       if (!customerUserApi) {
         res.status(404).json(utils.Encryptresponse(req.encryptresponse, "API not found, There is no custom version of this APi stored", req.body.apiPublicKey));
@@ -502,19 +499,24 @@ router.post("/query", async (request, res) => {
     else // an API was found
     { 
       // check if this is a request that could return a custom API
+      
       if (req.body.custom !== undefined && req.body.custom === true )
       {
          // fetch the custom value using email and chatbotkey
-         const customApi = await CustomUserApi.findOne({ clientNr: req.body.clientNr, name: req.body.name, email:req.body.email, chatbotKey:req.body.chatbotKey });
+         console.log("FETCHING CUSTOM API");
+         console.log(req.body.userClientNr);
+         const customApi = await CustomUserApi.findOne({ userClientNr: req.body.userClientNr, name: req.body.name, email:req.body.email, chatbotKey:req.body.chatbotKey });
+         console.log(customApi);
          if (customApi)
          { 
+            console.log("returned custom");
             res.status(200).json(customApi)
             return
          }
          else
          {
             // no custom api found
-            res.status(200).json(api)
+            res.status(200).json(api);
             return
          }
       }
