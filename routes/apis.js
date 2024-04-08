@@ -27,7 +27,13 @@ router.post("/registercustom", async (request, res) => {
       {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"userClientNr is a required field",req.body.apiPublicKey));
        return
-      }  
+      } 
+      
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      } 
  
 
       if (!req.body.name)
@@ -54,7 +60,7 @@ router.post("/registercustom", async (request, res) => {
  
    try 
    {
-      const query = {  userClientNr: req.body.userClientNr, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
+      const query = {  userClientNr: req.body.userClientNr, explorerId: req.body.explorerId, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
       const myCustomUserApiData = {
          ...req.body
       };
@@ -94,6 +100,12 @@ router.post("/registercustom", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"userClientNr is a required field",req.body.apiPublicKey));
        return
       }  
+
+   if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      }     
  
 
       if (!req.body.name)
@@ -116,7 +128,7 @@ router.post("/registercustom", async (request, res) => {
  
    try 
    {
-      const query = { userClientNr: req.body.userClientNr, name: req.body.name, chatbotKey: req.body.chatbotKey, email: req.body.email };
+      const query = { userClientNr: req.body.userClientNr, explorerId: req.body.explorerId, name: req.body.name, chatbotKey: req.body.chatbotKey, email: req.body.email };
       const customerUserApi = await CustomUserApi.findOneAndDelete(query);
       if (!customerUserApi) {
         res.status(404).json(utils.Encryptresponse(req.encryptresponse, "API not found, There is no custom version of this APi stored", req.body.apiPublicKey));
@@ -159,6 +171,12 @@ router.post("/registercustom", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
+
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      }  
  
 
    if (!req.body.name)
@@ -184,6 +202,7 @@ router.post("/registercustom", async (request, res) => {
          {
             collectionTag: "Unassigned",
             clientNr: req.body.clientNr,
+            explorerId: req.body.explorerId,
             name: req.body.name,
             thirdParty:req.body.thirdParty,
             description: req.body.description,
@@ -228,6 +247,12 @@ router.post("/registercustom", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
+
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      }  
  
 
    if (!req.body.apiToCopy)
@@ -244,7 +269,7 @@ router.post("/registercustom", async (request, res) => {
 
       
        
-      const myapiToCopy = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.apiToCopy })
+      const myapiToCopy = await Api.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, name: req.body.apiToCopy })
       if (!myapiToCopy)
        {
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"apiToCopy name for the api object not found. Could not copy",req.body.apiPublicKey));
@@ -303,6 +328,12 @@ const req = await utils.getDecodedBody(request);
       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
       return
      } 
+
+     if (!req.body.explorerId)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+     } 
      
      if (!req.body.name)
      {
@@ -317,7 +348,7 @@ const req = await utils.getDecodedBody(request);
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
-      const myapi = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      const myapi = await Api.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, name: req.body.name })
       if (!myapi)
        {
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A api object with this clientNr and name does not exist. Unable to update",req.body.apiPublicKey));
@@ -327,7 +358,7 @@ const req = await utils.getDecodedBody(request);
 
   try {
 
-    const api = await Api.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { name: req.body.name }] }, {
+    const api = await Api.findOneAndUpdate({ $and: [{ clientNr: req.body.clientNr }, { explorerId: req.body.explorerId }, { name: req.body.name }] }, {
     $set: req.body});
     if (!api) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The api object has not been updated. Not found!",req.body.apiPublicKey))}
     else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"api object has been updated.",req.body.apiPublicKey)) }
@@ -360,6 +391,12 @@ router.post("/changename", async (request, res) => {
          res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
          return
         } 
+
+        if (!req.body.explorerId)
+        {
+         res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+         return
+        } 
         
         if (!req.body.oldName)
         {
@@ -380,10 +417,10 @@ router.post("/changename", async (request, res) => {
           res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
           return
          }  
-         const myapi = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.oldName })
+         const myapi = await Api.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, name: req.body.oldName })
          if (!myapi)
           {
-           res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A api object with this clientNr and name does not exist. Unable to update",req.body.apiPublicKey));
+           res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A api object with this clientNr, explorerId and name does not exist. Unable to update",req.body.apiPublicKey));
            return
           } 
    
@@ -391,7 +428,7 @@ router.post("/changename", async (request, res) => {
      try {
    
       const api = await Api.findOneAndUpdate(
-         { $and: [{ clientNr: req.body.clientNr }, { name: req.body.oldName }] },
+         { $and: [{ clientNr: req.body.clientNr },{ explorerId: req.body.explorerId }, { name: req.body.oldName }] },
          { $set: { name: req.body.newName } } // Only update the `name` field
        );
        
@@ -426,6 +463,12 @@ router.post("/delete", async (request, res) => {
    return
    }  
 
+   if (!req.body.explorerId)
+   {
+   res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+   return
+   }  
+
    if (!req.body.name)
    {
    res.status(412).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
@@ -439,7 +482,7 @@ router.post("/delete", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       } 
-     const myapi = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+     const myapi = await Api.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId , name: req.body.name })
       if (!myapi)
        {
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An api object with this clientNr and name does not exist. Unable to delete",req.body.apiPublicKey));
@@ -447,7 +490,7 @@ router.post("/delete", async (request, res) => {
        } 
       
    try {
-    const api = await Api.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr }, { name: req.body.name }] });
+    const api = await Api.findOneAndDelete({ $and: [{ clientNr: req.body.clientNr },{ explorerId: req.body.explorerId }, { name: req.body.name }] });
     if (!api)
     {
     res.status(404).json(utils.Encryptresponse(req.encryptresponse,"api object not found and not deleted",req.body.apiPublicKey));
@@ -486,6 +529,12 @@ router.post("/query", async (request, res) => {
       return
      }  
 
+     if (!req.body.explorerId)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+     }  
+
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
@@ -494,8 +543,8 @@ router.post("/query", async (request, res) => {
       } 
   try {
     
-    const api = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name });
-    if (!api) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API object found for this clientNr and name combination",req.body.apiPublicKey))}
+    const api = await Api.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, name: req.body.name });
+    if (!api) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API object found for this clientNr, explorerId and name combination",req.body.apiPublicKey))}
     else // an API was found
     { 
       // check if this is a request that could return a custom API
@@ -505,7 +554,7 @@ router.post("/query", async (request, res) => {
          // fetch the custom value using email and chatbotkey
          console.log("FETCHING CUSTOM API");
          console.log(req.body.userClientNr);
-         const customApi = await CustomUserApi.findOne({ userClientNr: req.body.userClientNr, name: req.body.name, email:req.body.email, chatbotKey:req.body.chatbotKey });
+         const customApi = await CustomUserApi.findOne({ userClientNr: req.body.userClientNr, explorerId:req.body.explorerId ,name: req.body.name, email:req.body.email, chatbotKey:req.body.chatbotKey });
          console.log(customApi);
          if (customApi)
          { 
@@ -555,7 +604,13 @@ router.post("/queryall", async (request, res) => {
       {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
-      }  
+      } 
+      
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      } 
 
 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -566,7 +621,7 @@ router.post("/queryall", async (request, res) => {
        } 
    try {
      
-     const Apis = await Api.find({ clientNr: req.body.clientNr});
+     const Apis = await Api.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId});
      if (!Apis) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API objects found for this clientNr",req.body.apiPublicKey))}
      else {res.status(200).json(Apis) }
      }

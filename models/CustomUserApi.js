@@ -11,6 +11,10 @@ const CustomUserApiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    explorerId: {
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -70,6 +74,6 @@ const CustomUserApiSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-CustomUserApiSchema.index({ clientNr: 1, name: 1, chatbotKey: 1, email: 1 }, { unique: true });
+CustomUserApiSchema.index({ clientNr: 1, explorerId: 1 ,name: 1, chatbotKey: 1, email: 1 }, { unique: true });
 
 module.exports = mongoose.model("CustomUserApi", CustomUserApiSchema);

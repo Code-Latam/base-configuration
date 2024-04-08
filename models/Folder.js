@@ -5,6 +5,10 @@ const folderSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  explorerId: {
+    type: String,
+    required: true
+  },
   items: {
     type: mongoose.Schema.Types.Mixed,
     required: true

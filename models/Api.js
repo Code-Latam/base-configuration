@@ -11,6 +11,10 @@ const ApiSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    explorerId: {
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -59,6 +63,6 @@ const ApiSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-ApiSchema.index({ clientNr: 1, name: 1 }, { unique: true });
+ApiSchema.index({ clientNr: 1, explorerId: 1 ,name: 1 }, { unique: true });
 
 module.exports = mongoose.model("Api", ApiSchema);

@@ -29,6 +29,12 @@ router.post("/register", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"clientNr is a required field",req.body.apiPublicKey));
        return
       } 
+
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      }    
       
       if (!req.body.items)
       {
@@ -49,6 +55,7 @@ router.post("/register", async (request, res) => {
       const newFolder = new Folder(
          {
            clientNr: req.body.clientNr,
+           explorerId: req.body.explorerId,
            items: req.body.items
          });
          const folder = await newFolder.save();
@@ -85,6 +92,12 @@ if (!req.body.clientNr)
  return
 }  
 
+if (!req.body.explorerId)
+{
+ res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+ return
+}  
+
 
 if (!req.body.items)
       {
@@ -94,7 +107,7 @@ if (!req.body.items)
 
   try {
 
-    const folder = await Folder.findOneAndUpdate({ clientNr: req.body.clientNr }, {
+    const folder = await Folder.findOneAndUpdate({ clientNr: req.body.clientNr, explorerId: req.body.explorerId }, {
     $set: req.body});
     if (!folder) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"The folder object has not been updated. Not found!",req.body.apiPublicKey))}
     else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"folder object has been updated.",req.body.apiPublicKey)) }
@@ -104,7 +117,7 @@ if (!req.body.items)
 } );
 
 
-//delete explorer
+//delete folder
 router.post("/delete", async (request, res) => {
   const req = await utils.getDecodedBody(request);
 
@@ -126,6 +139,12 @@ router.post("/delete", async (request, res) => {
    res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
    return
   }  
+
+  if (!req.body.explorerId)
+  {
+   res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+   return
+  }  
   
 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -136,7 +155,7 @@ router.post("/delete", async (request, res) => {
       } 
       
    try {
-    var folder = await Folder.findOneAndDelete({  clientNr: req.body.clientNr  }, { _id: 0 });
+    var folder = await Folder.findOneAndDelete({  clientNr: req.body.clientNr, explorerId: req.body.explorerId  }, { _id: 0 });
     if (!folder)
     {
     res.status(404).json(utils.Encryptresponse(req.encryptresponse,"folder object not found and not deleted",req.body.apiPublicKey));
@@ -175,6 +194,12 @@ router.post("/query", async (request, res) => {
       return
      }  
 
+     if (!req.body.explorerId)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+     }  
+
      const client = await Client.findOne({ clientNr: req.body.clientNr })
      if (!client)
       {
@@ -183,7 +208,7 @@ router.post("/query", async (request, res) => {
       } 
   try {
     
-    const folders = await Folder.findOne({ clientNr: req.body.clientNr}, { _id: 0 });
+    const folders = await Folder.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId}, { _id: 0 });
     if (!folders) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No folder object found for this clientNr and explorerId combination",req.body.apiPublicKey))}
     else {res.status(200).json(folders) }
     }
@@ -215,6 +240,12 @@ router.post("/sync", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
+
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      }  
  
       const client = await Client.findOne({ clientNr: req.body.clientNr })
       if (!client)
@@ -224,12 +255,13 @@ router.post("/sync", async (request, res) => {
        } 
    try {
      var items;
-     const folders = await Folder.findOne({ clientNr: req.body.clientNr}, { _id: 0 });
+     const folders = await Folder.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId}, { _id: 0 });
      if (!folders) 
      { // no folders found. Create the folders
 
          const documentStructure = {
             clientNr: req.body.clientNr,
+            explorerId: req.body.explorerId,
             items: {
             root: {
                index: "root",
@@ -264,7 +296,7 @@ router.post("/sync", async (request, res) => {
 
      // // fetch apis and sync the folder structure with them
      var myNewItems = items
-     const Apis = await Api.find({ clientNr: req.body.clientNr});
+     const Apis = await Api.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId});
      if (Apis)
       {
          Apis.forEach(api => {
@@ -280,7 +312,7 @@ router.post("/sync", async (request, res) => {
 
       console.log("MY NEW ITEMS");
       console.log(myNewItems);
-      await Folder.findOneAndUpdate({clientNr:req.body.clientNr}, { $set: { items: myNewItems } })
+      await Folder.findOneAndUpdate({clientNr:req.body.clientNr, explorerId: req.body.explorerId}, { $set: { items: myNewItems } })
       res.status(200).json(utils.Encryptresponse(req.encryptresponse,"SYNC COMPLETED",req.body.apiPublicKey))
 
      }
