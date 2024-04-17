@@ -156,7 +156,12 @@ router.post("/login", async (request, res) => {
         console.log(targetExplorer);
         if (utils.hasAccessRights(req.body.appname, user.groups, user.explorers, targetExplorer))
           {
-          res.status(200).json(utils.Encryptresponse(req.encryptresponse,user,req.body.apiPublicKey))
+            let resp = user.toObject();  
+            newuser = {
+            ...resp,
+            explorerId: targetExplorer[0]
+          }  
+          res.status(200).json(utils.Encryptresponse(req.encryptresponse,newuser,req.body.apiPublicKey))
           }
         else
           {

@@ -146,7 +146,7 @@ router.post("/query", async (request, res) => {
       } 
   try {
     
-    const users = await User.findOne({ chatbotKey: req.body.chatbotKey, username: req.body.username });
+    const users = await User.findOne({ clientNr: req.body.clientNr, chatbotKey: req.body.chatbotKey });
     if (!users) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No user found for this chatbot and name combination",req.body.apiPublicKey))}
     else {res.status(200).json(users) }
     }

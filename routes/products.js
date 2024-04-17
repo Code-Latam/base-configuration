@@ -344,7 +344,7 @@ router.post("/queryall", async (request, res) => {
        } 
    try {
      
-     const products = await Product.find({ clientNr: req.body.clientNr,exploreId: req.body.explorerId});
+     const products = await Product.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId});
      if (!products) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No product object found for this clientNr",req.body.apiPublicKey))}
      else {res.status(200).json(products) }
      }
