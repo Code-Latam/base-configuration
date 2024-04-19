@@ -26,6 +26,7 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
        console.log(item);
        const apiData = {
          collectionTag: collectionName,
+         explorerId:explorerId,
          clientNr: clientNr, 
          name: item.name, // ok
          description: item.request.description || 'none', // ok
@@ -44,26 +45,26 @@ const processItems = async (items,clientNr,explorerId, collectionName) => {
 
 
        // Create a new Api document
-       const query = { name: item.name, clientNr:clientNr };
+       const query = { name: item.name, clientNr:clientNr, explorerId: explorerId };
        const options = { upsert: true, new: true, setDefaultsOnInsert: true };
        await Api.findOneAndUpdate(query, apiData, options);
 
        // update folders:
 
-       updateFolderStructure(clientNr, apiData.name)
+       updateFolderStructure(clientNr, explorerId, apiData.name)
 
      }
    }
  };
 
-async function updateFolderStructure(clientNr, apiName)
+async function updateFolderStructure(clientNr, explorerId, apiName)
 
 {
    // get the folder structure:
    try
    {
       console.log("WE ARE IN")
-      const query = { clientNr:clientNr };
+      const query = { clientNr:clientNr, explorerId: explorerId };
       console.log(`CLIENT NR:`);
       console.log(query);
       console.log(`APINAME: ${apiName}`);
@@ -126,6 +127,11 @@ router.post("/postman", async (request, res) => {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
        return
       }  
+   if (!req.body.explorerId)
+   {
+      res.status(416).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+   }  
 
       if (!req.body.url)
       {
@@ -168,10 +174,11 @@ router.post("/postman", async (request, res) => {
       for (const [method, details] of Object.entries(methods)) {
          const operationId = details.operationId || utils.generateUniqueId();
 
-         const query = { name: operationId, clientNr: clientNr };
+         const query = { name: operationId, clientNr: clientNr, explorerId: explorerId };
          const apiData = {
             collectionTag: collectionName,
             clientNr: clientNr,
+            explorerId: explorerId,
             name: operationId,
             description: details.description || 'none',
             urlRoute: path,
@@ -207,10 +214,11 @@ router.post("/openapi", async (request, res) => {
             const uniqueName = `${method.toLowerCase()}_${path.replace(/\//g, '_')}`; // Example: get_v1_payments
 
    
-            const query = { name: uniqueName, clientNr: clientNr };
+            const query = { name: uniqueName, clientNr: clientNr, explorerId:explorerId };
             const apiData = {
                collectionTag: collectionName,
                clientNr: clientNr,
+               explorerId:explorerId,
                name: uniqueName,
                description: details.description || 'none',
                urlRoute: path,
@@ -232,7 +240,7 @@ router.post("/openapi", async (request, res) => {
             const options = { upsert: true, new: true, setDefaultsOnInsert: true };
             await Api.findOneAndUpdate(query, apiData, options);
 
-            updateFolderStructure(clientNr, apiData.name)
+            updateFolderStructure(clientNr,explorerId, apiData.name)
          }
       }
    };
@@ -275,8 +283,8 @@ router.post("/openapi", async (request, res) => {
 
    // Add your authentication checks here
 
-   if (!req.body.clientNr || !req.body.url) {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse, "ClientNr and URL are required fields", req.body.apiPublicKey));
+   if (!req.body.clientNr || !req.body.url || !req.body.explorerId) {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse, "ClientNr, URL and explorerId are required fields", req.body.apiPublicKey));
       return;
    }
 

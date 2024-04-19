@@ -35,6 +35,8 @@ const apiRoute = require("./routes/apis");
 const folderRoute = require("./routes/folders");
 const apiimportRoute = require("./routes/apiimport");
 
+const invitationRoute = require("./routes/invitations");
+
 
 const router = express.Router();
 const path = require("path");
@@ -98,6 +100,8 @@ app.use("/api/link", linkRoute);
 app.use("/api/api", apiRoute);
 app.use("/api/folder", folderRoute);
 app.use("/api/apiimport", apiimportRoute);
+
+app.use("/api/invitation", invitationRoute);
 
 
 const port = process.env.PORT || 8800

@@ -1,4 +1,4 @@
-const ChatbotExplorerRel = require("../models/ChatbotExplorerRel.js");
+const ChatbotExplorerRel = require("../models/ChatbotExplorerRel");
 const Client = require("../models/Client");
 const Explorer = require("../models/Explorer");
 const Yaml = require("../models/Yaml");
@@ -51,9 +51,13 @@ router.post("/query", async (request, res) => {
         return
        } 
   try {
-    
+    console.log("Hello");
     const chatbotexplorerrel = await ChatbotExplorerRel.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId });
-    if (!chatbotexplorerrel) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot explorer relation object found for this clientNr and explorerId combination",req.body.apiPublicKey))}
+    if (!chatbotexplorerrel) 
+    {
+      console.log("FAIL");
+      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot explorer relation object found for this clientNr and explorerId combination",req.body.apiPublicKey))
+   }
     else {res.status(200).json(chatbotexplorerrel) }
     }
     catch (err) {
