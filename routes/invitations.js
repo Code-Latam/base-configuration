@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 
 
-async function sendEmail(toEmail, fromEmail, clientNr, token) {
+async function sendEmail(toEmail, fromEmail, token, clientNr, ) {
    // Create a transporter object using the default SMTP transport
    let transporter = nodemailer.createTransport({
        host: "smtp.titan.email",  // Replace with your SMTP host
@@ -26,9 +26,9 @@ async function sendEmail(toEmail, fromEmail, clientNr, token) {
 
    // Setup email data with unicode symbols
    let mailOptions = {
-       from: fromEmail, // Sender address
+       from: "NOREPLY", // Sender address
        to: toEmail,  // List of receivers
-       subject: 'Invitation to join the ' + clientNr + ' GWOCU STUDIO',                      // Subject line
+       subject: 'Invitation to join ' + clientNr + ' in the GWOCU STUDIO',                      // Subject line
        text: `You are invited to join our workspace. Please use the following link to accept the invitation: https://yourdomain.com/accept-invite?token=${token}`,
        html: `<strong>You are invited to join our platform.</strong><br><a href="https://yourdomain.com/accept-invite?token=${token}">Click here to accept the invitation</a>`
    };
@@ -101,11 +101,6 @@ router.post("/invite", async (request, res) => {
        return
       } 
 
-      if (!req.body.groups)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"groups is a required field",req.body.apiPublicKey));
-       return
-      } 
 
       if (!req.body.explorers)
       {
@@ -156,7 +151,6 @@ router.post("/invite", async (request, res) => {
          $set: {
            chatbotKey: req.body.chatbotKey, // Included in $set for clarity and completeness
            email: req.body.toEmail,           // Included in $set for clarity and completeness
-           groups: req.body.groups,
            explorers: req.body.explorers
          }
        };
@@ -168,15 +162,18 @@ router.post("/invite", async (request, res) => {
        
        const invite = await Invite.findOneAndUpdate(filter, update, options);
        // send email
-       const sendresult = await sendEmail(req.body.toEmail, req.body.fromEmail, token, req.body.clientNr, token );
+       const sendresult = await sendEmail(req.body.toEmail, req.body.fromEmail, token, req.body.clientNr);
        if (sendresult)
          {
             res.status(200).json(invite);
+            return
          }
        else
        {
          res.status(403).json(utils.Encryptresponse(req.encryptresponse,"Failed to send invite email.",req.body.apiPublicKey))
-       }
+         
+         return
+      }
        
      } 
     else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this invite to.",req.body.apiPublicKey));}
@@ -226,58 +223,6 @@ router.post("/invite", async (request, res) => {
 
 
 
-router.post("/update", async (request, res) => {
-
-const req = await utils.getDecodedBody(request);
-console.log("REQUESTBODY");
-console.log(req.body);
-
-  if (!req.endtoendPass)
-     {
-      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
-      return
-     }  
-
-  if (!req.gwokenPass)
-     {
-      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
-      return
-     }  
-
-
-  if (!req.body.clientNr)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
-      return
-     }  
-
-     if (!req.body.chatbotKey)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
-      return
-     } 
-     const client = await Client.findOne({ clientNr: req.body.clientNr })
-     if (!client)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
-       return
-      }  
-
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    if (req.body.password)
-    {
-      req.body.password = await bcrypt.hash(req.body.password, salt);
-    }
-    const user = await User.findOneAndUpdate({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] }, {
-    $set: req.body});
-    if (!user) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"User has not been updated. Not found!",req.body.apiPublicKey))}
-    else { res.status(200).json(utils.Encryptresponse(req.encryptresponse,"User has been updated.",req.body.apiPublicKey)) }
-  } catch (err) {
-    res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
-  }
-} );
 
 //delete user
 router.post("/delete", async (request, res) => {
@@ -295,29 +240,23 @@ router.post("/delete", async (request, res) => {
       return
      }  
 
-
-  if (!req.body.clientNr)
-     {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
-      return
-     }  
-
      if (!req.body.chatbotKey)
      {
       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
       return
      } 
-     const client = await Client.findOne({ clientNr: req.body.clientNr })
-     if (!client)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
-       return
-      }  
+
+     if (!req.body.email)
+     {
+      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
+      return
+     } 
+
    try {
-    var user = await User.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
-    if (!user)
+    var invite = await Invite.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
+    if (!invite)
     {
-    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"user not found and not deleted",req.body.apiPublicKey));
+    res.status(404).json(utils.Encryptresponse(req.encryptresponse,"Invite not found and not deleted",req.body.apiPublicKey));
     }
     else
     {
@@ -366,75 +305,7 @@ router.post("/queryall", async (request, res) => {
   }
 });
 
-router.post("/explorers", async (request, res) => {
 
-   const req = await utils.getDecodedBody(request);
-   console.log("BODY");
-   console.log(req.body);
- 
-   if (!req.endtoendPass)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
-       return
-      }  
- 
-   if (!req.gwokenPass)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
-       return
-      }  
- 
- 
-   if (!req.body.clientNr)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
-       return
-      }  
- 
-   if (!req.body.chatbotKey)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
-       return
-      } 
-   if (!req.body.email)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
-       return
-      } 
-
-   const client = await Client.findOne({ clientNr: req.body.clientNr })
-      if (!client)
-       {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
-        return
-       } 
-   try 
-   {
-     
-     const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email });
-     if (!user) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No user found for this chatbot and email combination",req.body.apiPublicKey))}
-     else 
-      { // for each exploreid in user fetch the description construct the object and push in list
-         const explorersIdList = user.explorers ;
-         const result = [];
-         for (const id of explorersIdList) {
-            try {
-               const explorer = await Explorer.findOne({ explorerId: id, clientNr: req.body.clientNr });
-               if (explorer) {
-               result.push({ id: explorer.explorerId, description: explorer.name });
-               } 
-            } catch (error) {
-               console.error(`Error fetching explorer with ID ${id}:`, error);
-            }
-         }
-         res.status(200).json(result) 
-      }
-   }
-     catch (err) {
-       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
-   }
- });
- 
 
 
 

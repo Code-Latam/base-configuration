@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
+// Define the Explorer sub-schema
+const ExplorerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  designer: { type: Boolean, default: false },
+  owner: { type: Boolean, default: false },
+  reader: { type: Boolean, default: false }
+});
 
+const UserSchema = new mongoose.Schema(
   {
     chatbotKey: {
       type: String,
@@ -32,7 +39,7 @@ const UserSchema = new mongoose.Schema(
       default: [],
     },
     explorers: {
-      type: Array,
+      type: [ExplorerSchema], // Update this line
       default: [],
     },
     isAdmin: {
@@ -46,3 +53,4 @@ const UserSchema = new mongoose.Schema(
 UserSchema.index({chatbotKey: 1, email: 1}, {unique: true});
 
 module.exports = mongoose.model("User", UserSchema);
+

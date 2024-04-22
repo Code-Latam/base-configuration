@@ -135,13 +135,13 @@ router.post("/query", async (request, res) => {
 
      if (!req.body.email)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
+      res.status(413).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
       return
      }  
 
      if (!req.body.chatbotKey)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+      res.status(414).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
       return
      } 
      const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -206,23 +206,24 @@ router.post("/explorers", async (request, res) => {
    try 
    {
      
-     const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email });
-     if (!user) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No user found for this chatbot and email combination",req.body.apiPublicKey))}
-     else 
-      { // for each exploreid in user fetch the description construct the object and push in list
-         const explorersIdList = user.explorers ;
-         const result = [];
-         for (const id of explorersIdList) {
-            try {
-               const explorer = await Explorer.findOne({ explorerId: id, clientNr: req.body.clientNr });
-               if (explorer) {
-               result.push({ id: explorer.explorerId, description: explorer.name });
-               } 
-            } catch (error) {
-               console.error(`Error fetching explorer with ID ${id}:`, error);
-            }
-         }
-         res.status(200).json(result) 
+      const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email });
+      if (!user) {
+          res.status(404).json(utils.Encryptresponse(req.encryptresponse, "No user found for this chatbot and email combination", req.body.apiPublicKey));
+      } else {
+      
+          const explorersNameList = user.explorers.map(explorer => explorer.name);
+          const result = [];
+          for (const name of explorersNameList) {
+              try {
+                  const explorer = await Explorer.findOne({ explorerId: name, clientNr: req.body.clientNr });
+                  if (explorer) {
+                      result.push({ id: explorer.explorerId, description: explorer.name });
+                  } 
+              } catch (error) {
+                  console.error(`Error fetching explorer with name ${name}:`, error);
+              }
+          }
+          res.status(200).json(result);
       }
    }
      catch (err) {

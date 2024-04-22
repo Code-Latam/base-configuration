@@ -1,5 +1,13 @@
 const mongoose = require("mongoose");
 
+// Define the Explorer sub-schema
+const ExplorerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  designer: { type: Boolean, default: false },
+  owner: { type: Boolean, default: false },
+  reader: { type: Boolean, default: false }
+});
+
 const InvitationSchema = new mongoose.Schema(
 
   {
@@ -12,12 +20,8 @@ const InvitationSchema = new mongoose.Schema(
       required: true,
       max: 50,
     },
-    groups: {
-      type: Array,
-      default: [],
-    },
     explorers: {
-      type: Array,
+      type: [ExplorerSchema], // Update this line
       default: [],
     },
   },

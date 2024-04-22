@@ -319,10 +319,17 @@ router.post("/register", async (request, res) => {
 // add explorerId to array of explorers
         try {
 
-         await User.findOneAndUpdate(
-            { chatbotKey: req.body.chatbotKey, email: req.body.email }, 
-            { $push: { explorers: req.body.explorerId } }
-        );
+        await User.findOneAndUpdate(
+          { chatbotKey: req.body.chatbotKey, email: req.body.email },  // Query: matches documents based on chatbotKey only
+          { $push: { explorers: { 
+              name: req.body.explorerId, 
+              designer: false, 
+              owner: true, 
+              reader: false 
+            } } }  // Update: pushes a new object into the explorers array
+      );
+
+
         }
 
         catch(err)
@@ -544,6 +551,11 @@ router.post("/delete", async (request, res) => {
             { chatbotKey: req.body.chatbotKey, explorers: req.body.explorerId }, // Condition to find documents where explorers array contains 'req.body.explorerId'
             { $pull: { explorers: req.body.explorerId } } // Pull/remove 'x' from the explorers array
           );
+
+          await User.updateMany(
+            { chatbotKey: req.body.chatbotKey },  // Query: specifies the documents by chatbotKey and email
+            { $pull: { explorers: { name: req.body.explorerId } } }  // Update: removes objects from explorers where name matches explorerId
+        );
         
 
    }

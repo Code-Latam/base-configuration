@@ -387,14 +387,15 @@ return myencryptedreturbody;
   console.log(userexplorers);
   console.log(targetExplorer);
  
-  const apiFnyGroups = ["apiFnyDesigners", "apiFnyUsers"];
+  
   const AiStudioGroups = ['chatbotDesigners']; 
   const chatbotGroups = ['chatbotUsers'];
  
 
   switch (appname) {
     case "APIFNY":
-      return haveCommonElement(usergroups, apiFnyGroups) && haveCommonElement(userexplorers, targetExplorer)
+      const explorersNameList = userexplorers.map(explorer => explorer.name);
+      return  haveCommonElement(explorersNameList, targetExplorer)
       break;
     case "AISTUDIO":
       return haveCommonElement(usergroups, AiStudioGroups)
