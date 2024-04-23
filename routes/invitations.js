@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 
 
-async function sendEmail(toEmail, fromEmail, token, clientNr, ) {
+async function sendEmail(toEmail, token, clientNr, ) {
    // Create a transporter object using the default SMTP transport
    let transporter = nodemailer.createTransport({
        host: "smtp.titan.email",  // Replace with your SMTP host
@@ -82,12 +82,6 @@ router.post("/invite", async (request, res) => {
          res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
          return
          }  
-
-      if (!req.body.fromEmail)
-      {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse," fromEmail is a required field",req.body.apiPublicKey));
-       return
-      } 
 
       if (!req.body.toEmail)
       {
@@ -160,20 +154,17 @@ router.post("/invite", async (request, res) => {
          upsert: true // Creates a new document if no existing document matches the filter
        };
        
-       const invite = await Invite.findOneAndUpdate(filter, update, options);
-       // send email
-       const sendresult = await sendEmail(req.body.toEmail, req.body.fromEmail, token, req.body.clientNr);
-       if (sendresult)
+      
+       const sendresult = await sendEmail(req.body.toEmail, token, req.body.clientNr);
+       if (!sendresult)
          {
-            res.status(200).json(invite);
+            res.status(403).json(utils.Encryptresponse(req.encryptresponse,"Failed to send invite email.",req.body.apiPublicKey))
+            
             return
          }
-       else
-       {
-         res.status(403).json(utils.Encryptresponse(req.encryptresponse,"Failed to send invite email.",req.body.apiPublicKey))
-         
-         return
-      }
+
+      const invite = await Invite.findOneAndUpdate(filter, update, options);
+      res.status(200).json(invite);
        
      } 
     else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this invite to.",req.body.apiPublicKey));}
