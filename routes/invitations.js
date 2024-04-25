@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 
 
-async function sendEmail(toEmail, token, clientNr, ) {
+async function sendEmail(toEmail, token, clientNr, url, chatbotKey) {
    // Create a transporter object using the default SMTP transport
    let transporter = nodemailer.createTransport({
        host: "smtp.titan.email",  // Replace with your SMTP host
@@ -24,13 +24,39 @@ async function sendEmail(toEmail, token, clientNr, ) {
        }
    });
 
+   const svgContent =`
+    <svg xmlns="http://www.w3.org/2000/svg" name="svg-container-graph-0" style="height: 400px; width: 650px;"><defs><marker class="marker" id="marker-small" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#d3d3d3"><path d="M0,-5L10,0L0,5"/></marker><marker class="marker" id="marker-small-highlighted" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#03A062"><path d="M0,-5L10,0L0,5"/></marker><marker class="marker" id="marker-medium" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#d3d3d3"><path d="M0,-5L10,0L0,5"/></marker><marker class="marker" id="marker-medium-highlighted" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#03A062"><path d="M0,-5L10,0L0,5"/></marker><marker class="marker" id="marker-large" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#d3d3d3"><path d="M0,-5L10,0L0,5"/></marker><marker class="marker" id="marker-large-highlighted" viewBox="0 -5 10 10" refX="0" refY="0" markerWidth="6" markerHeight="6" orient="auto" fill="#03A062"><path d="M0,-5L10,0L0,5"/></marker></defs><g id="graph-0-graph-container-zoomable" transform="translate(-65,-40.39999999999998) scale(1.2)" style="transition-duration: 0s;"><g><path class="link" d="M98.1895012889572,76.57986131857938 A0,0 0 0,1 98.27435650440913,104.75351372668236" marker-end="url(#marker-small)" id="TLLE,TISC" style="stroke-width: 2; stroke: rgb(211, 211, 211); opacity: 1; fill: none; cursor: pointer; stroke-dasharray: 0; stroke-dashoffset: 0; stroke-linecap: butt;"/></g><g><path class="link" d="M98.29038494287569,131.91310992788402 A0,0 0 0,1 98.11093592337885,163.58706739649045" marker-end="url(#marker-small)" id="TISC,TZJJ" style="stroke-width: 2; stroke: rgb(211, 211, 211); opacity: 1; fill: none; cursor: pointer; stroke-dasharray: 0; stroke-dashoffset: 0; stroke-linecap: butt;"/></g><g><path class="link" d="M105.57855967618558,183.30977647965412 A158.20656713576906,158.20656713576906 0 0,1 263.75692308783226,186.29695462928595" marker-end="url(#marker-small)" id="TZJJ,TSDW" style="stroke-width: 2; stroke: rgb(211, 211, 211); opacity: 1; fill: none; cursor: pointer; stroke-dasharray: 0; stroke-dashoffset: 0; stroke-linecap: butt;"/></g><g><path class="link" d="M283.36607613179297,194.2464852984301 A0,0 0 0,1 283.5820764095922,244.25360756931147" marker-end="url(#marker-small)" id="TSDW,TOXR" style="stroke-width: 2; stroke: rgb(211, 211, 211); opacity: 1; fill: none; cursor: pointer; stroke-dasharray: 0; stroke-dashoffset: 0; stroke-linecap: butt;"/></g><g class="node" cx="98.33332824707031" cy="124.33332824707031" id="TISC" transform="translate(98.33332824707031,124.33332824707031)" style="touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path cursor="pointer" opacity="1" d="M7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,-7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,7.978845608028654,0" fill="blue" stroke="none" stroke-width="1.5"/><text dx="15.5" dy=".35em" fill="#03A062" font-size="12" font-weight="normal" opacity="1">Select Payment Method</text></g><g class="node" cx="98.16667175292969" cy="68.99999237060547" id="TLLE" transform="translate(98.16667175292969,68.99999237060547)" style="touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path cursor="pointer" opacity="1" d="M7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,-7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,7.978845608028654,0" fill="#03A062" stroke="none" stroke-width="1.5"/><text dx="15.5" dy=".35em" fill="#03A062" font-size="12" font-weight="normal" opacity="1">Display Payment Form</text></g><g class="node" cx="283.6666488647461" cy="263.8333282470703" id="TOXR" transform="translate(283.6666488647461,263.8333282470703)" style="touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path cursor="pointer" opacity="1" d="M7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,-7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,7.978845608028654,0" fill="#03A062" stroke="none" stroke-width="1.5"/><text dx="15.5" dy=".35em" fill="#03A062" font-size="12" font-weight="normal" opacity="1">Display Result</text></g><g class="node" cx="283.33333587646484" cy="186.66665267944336" id="TSDW" transform="translate(283.33333587646484,186.66665267944336)" style="touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path cursor="pointer" opacity="1" d="M7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,-7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,7.978845608028654,0" fill="#03A062" stroke="none" stroke-width="1.5"/><text dx="15.5" dy=".35em" fill="#03A062" font-size="12" font-weight="normal" opacity="1">Handle Notification</text></g><g class="node" cx="98.00000762939453" cy="183.16665649414062" id="TZJJ" transform="translate(98.00000762939453,183.16665649414062)" style="touch-action: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><path cursor="pointer" opacity="1" d="M7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,-7.978845608028654,0A7.978845608028654,7.978845608028654,0,1,1,7.978845608028654,0" fill="blue" stroke="none" stroke-width="1.5"/><text dx="15.5" dy=".35em" fill="#03A062" font-size="12" font-weight="normal" opacity="1">Process Payment</text></g></g></svg>
+  `;
+
+
+   const htmlBody = `
+   <html>
+     <head>
+       <title>Welcome!</title>
+     </head>
+     <body>
+       <h1>Welcome to Our Service</h1>
+       <p>You are invited to join the GWOCU Studio platform. Please find your login details below:</p>
+       <ul>
+         <li>Client Number: ${clientNr}</li>
+         <li>Chatbot Key: ${chatbotKey}</li>
+         <li>Email: ${toEmail}</li>
+         <li>Password: [Password you set during the acceptance of the invitation]</li>
+       </ul>
+       <p>Click <a href="${url}?token=${token}">here</a> to accept your invitation and set your password.</p>
+       <p>Here is an example of API workflows you can make with the Studio. Blue dots are fully configurable and executable API calls:</p>
+        ${svgContent}
+       </body>
+   </html>
+ `;
+
    // Setup email data with unicode symbols
    let mailOptions = {
        from: "NOREPLY", // Sender address
        to: toEmail,  // List of receivers
        subject: 'Invitation to join ' + clientNr + ' in the GWOCU STUDIO',                      // Subject line
-       text: `You are invited to join our workspace. Please use the following link to accept the invitation: https://yourdomain.com/accept-invite?token=${token}`,
-       html: `<strong>You are invited to join our platform.</strong><br><a href="https://yourdomain.com/accept-invite?token=${token}">Click here to accept the invitation</a>`
+       text: `You are invited to join our workspace.`,
+       html: htmlBody
    };
 
    // Send mail with defined transport object
@@ -100,7 +126,13 @@ router.post("/invite", async (request, res) => {
       {
        res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorers is a required field",req.body.apiPublicKey));
        return
-      } 
+      }
+      
+      if (!req.body.url)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"url is a required field",req.body.apiPublicKey));
+       return
+      }
 
 
       const client = await Client.findOne({ clientNr: req.body.clientNr })
@@ -155,7 +187,7 @@ router.post("/invite", async (request, res) => {
        };
        
       
-       const sendresult = await sendEmail(req.body.toEmail, token, req.body.clientNr);
+       const sendresult = await sendEmail(req.body.toEmail, token, req.body.clientNr, req.body.url, req.body.chatbotKey);
        if (!sendresult)
          {
             res.status(403).json(utils.Encryptresponse(req.encryptresponse,"Failed to send invite email.",req.body.apiPublicKey))
@@ -197,8 +229,8 @@ router.post("/invite", async (request, res) => {
       return
       }  
 
-      const result = verifyToken()
-      if (result()) 
+      const result = verifyToken(req.body.token)
+      if (result) 
       {
          res.status(200).json(result) 
       }       

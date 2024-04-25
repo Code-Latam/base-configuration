@@ -43,7 +43,7 @@ router.post("/register", async (request, res) => {
       const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email })
      if (user)
       {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A user with this email allready exists for this chatbot",req.body.apiPublicKey));
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A user with this email allready exists for this workspace",req.body.apiPublicKey));
        return
       } 
 
