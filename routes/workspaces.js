@@ -548,11 +548,6 @@ router.post("/delete", async (request, res) => {
           // remove explorerId from the explorer array of all users that have this chatbot
 
           await User.updateMany(
-            { chatbotKey: req.body.chatbotKey, explorers: req.body.explorerId }, // Condition to find documents where explorers array contains 'req.body.explorerId'
-            { $pull: { explorers: req.body.explorerId } } // Pull/remove 'x' from the explorers array
-          );
-
-          await User.updateMany(
             { chatbotKey: req.body.chatbotKey },  // Query: specifies the documents by chatbotKey and email
             { $pull: { explorers: { name: req.body.explorerId } } }  // Update: removes objects from explorers where name matches explorerId
         );

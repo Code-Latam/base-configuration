@@ -93,6 +93,12 @@ router.post("/delete", async (request, res) => {
        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
        return
       }  
+    const myuser = User.findOne({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
+    if (myuser.name == "Admin")
+    {
+      res.status(406).json(utils.Encryptresponse(req.encryptresponse,"The administartive user cannot be deleted",req.body.apiPublicKey));
+      return
+    }
    try {
     var user = await User.findOneAndDelete({ $and: [{ chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
     if (!user)
