@@ -1,6 +1,7 @@
 const Client = require("../models/Client");
 const Api = require("../models/Api");
 const CustomUserApi = require("../models/CustomUserApi");
+const CustomUserApiResult = require("../models/CustomUserApiResult");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
@@ -65,7 +66,7 @@ router.post("/registercustom", async (request, res) => {
          ...req.body
       };
 
-      console.log(req.body);
+      console.log('REQUEST BODY', req.body);
      
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
       const customUserApi = await CustomUserApi.findOneAndUpdate(query, myCustomUserApiData, options);
@@ -73,6 +74,76 @@ router.post("/registercustom", async (request, res) => {
       }
    
     catch (err) {
+       console.error('Error during database operation:', err);
+       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
+     }
+   
+ });
+
+ router.post("/registerapiresult", async (request, res) => {
+   const req = await utils.getDecodedBody(request);
+   console.log("IN API RESULT");
+ 
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+ 
+   if (!req.body.clientNr)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"clientNr is a required field",req.body.apiPublicKey));
+       return
+      } 
+      
+      if (!req.body.explorerId)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       return
+      } 
+ 
+
+      if (!req.body.name)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
+       return
+      } 
+
+      if (!req.body.chatbotKey)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+       return
+      } 
+
+      if (!req.body.email)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
+       return
+      } 
+
+   try 
+   {
+      const query = {  clientNr: req.body.clientNr, explorerId: req.body.explorerId, name: req.body.name,chatbotKey: req.body.chatbotKey,email: req.body.email };
+      const myCustomUserApiResultData = {
+         ...req.body
+      };
+
+      console.log('REQUEST BODY', req.body);
+     
+      const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+      const customUserApiResult = await CustomUserApiResult.findOneAndUpdate(query, myCustomUserApiResultData, options);
+      res.status(200).json(customUserApiResult);
+      }
+   
+    catch (err) {
+       console.error('Error during database operation:', err);
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
      }
    
@@ -565,6 +636,7 @@ router.post("/query", async (request, res) => {
          else
          {
             // no custom api found
+            console.log('NOCUSTOMAPI', api);
             res.status(200).json(api);
             return
          }

@@ -19,8 +19,12 @@ const linkObjectSchema = new mongoose.Schema({
     default: false,
   },
   pathParameters: {
-    type: mongoose.Schema.Types.Mixed, // Define requestBody as an object
+    type: mongoose.Schema.Types.Mixed, 
     default: {}, // Default value is an empty object
+  },
+  pathOrder: {
+    type: mongoose.Schema.Types.Mixed,
+    default: [], // Default value is an empty object
   },
   queryParameters: {
     type: mongoose.Schema.Types.Mixed, // Define requestBody as an object
