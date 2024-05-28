@@ -18,6 +18,10 @@ const linkObjectSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  sequence: {
+    type: Number,
+    default: 1,
+  },
   pathParameters: {
     type: mongoose.Schema.Types.Mixed, 
     default: {}, // Default value is an empty object
