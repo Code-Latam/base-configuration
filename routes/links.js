@@ -422,21 +422,24 @@ router.post("/queryorderedapi", async (request, res) => {
       for (const taskName of taskNames) {
          const taskData = await Task.findOne({ clientNr: req.body.clientNr, explorerId:req.body.explorerId, taskId:taskName, workflowName:req.body.workflowName })
          if (taskData) {
-           apiNamesArray.push(taskData.apiName);
+           apiNamesArray.push({taskId: taskData.taskId, apiName: taskData.apiName});
          }
        }
+       console.log("APIS NAME ARRAY",apiNamesArray )
+
        const apiObjectsArray = [];
 
-       for (const apiName of apiNamesArray) {
-         if (apiName === "") {
+       for (const item of apiNamesArray) {
+         if (item.apiName === "") {
            apiObjectsArray.push({});
          } else {
-           const apiData = await Api.findOne({ clientNr: req.body.clientNr, name: apiName });
+           const apiData = await Api.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, name: item.apiName });
            if (apiData) {
-             apiObjectsArray.push(apiData);
+             apiObjectsArray.push({taskId:item.taskId, api:apiData });
            }
          }
        }
+       console.log("API OBJECTS ARRAY", apiObjectsArray)
 
       res.status(200).json(utils.Encryptresponse(req.encryptresponse,apiObjectsArray,req.body.apiPublicKey)) 
      }
