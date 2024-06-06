@@ -49,6 +49,10 @@ const ClientSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    jiraCustomerId: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );

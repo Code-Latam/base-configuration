@@ -35,7 +35,7 @@ async function sendEmail(toEmail, token, clientNr, url, chatbotKey) {
        <title>Welcome!</title>
      </head>
      <body>
-       <h1>Welcome to Our Service</h1>
+       <h1>Welcome to ${clientNr} on Gwocu</h1>
        <p>You are invited to join the GWOCU Studio platform. Please find your login details below:</p>
        <ul>
          <li>Client Number: ${clientNr}</li>
@@ -44,8 +44,6 @@ async function sendEmail(toEmail, token, clientNr, url, chatbotKey) {
          <li>Password: [Password you set during the acceptance of the invitation]</li>
        </ul>
        <p>Click <a href="${url}?token=${token}">here</a> to accept your invitation and set your password. The invitation will expire in 5 days.</p>
-       <p>Here is an example of API workflows you can make with the Studio. Blue dots are fully configurable and executable API calls:</p>
-        ${svgContent}
        </body>
    </html>
  `;
@@ -54,7 +52,7 @@ async function sendEmail(toEmail, token, clientNr, url, chatbotKey) {
    let mailOptions = {
       from: '"GWOCU Studio" <steven@code-latam.com>', // Sender address
       to: toEmail,  // List of receivers
-      subject: 'Invitation to join ' + clientNr + ' in the GWOCU STUDIO',  // Subject line
+      subject: 'Gwocu',  // Subject line
       text: `You are invited to join our workspace.`,
       html: htmlBody
   };
