@@ -96,7 +96,7 @@ router.post("/register", async (request, res) => {
            y:req.body.y
          });
          const task = await newTask.save();
-         res.status(200).json(task);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,task,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -325,7 +325,10 @@ router.post("/query", async (request, res) => {
     
     const tasks = await Task.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName ,taskId: req.body.taskId });
     if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr, explorerId and taskId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(tasks) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,tasks,req.body.apiPublicKey));
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -380,7 +383,10 @@ router.post("/queryall", async (request, res) => {
      
      const tasks = await Task.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId , workflowName:req.body.workflowName});
      if (!tasks) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No task object found for this clientNr, explorerId and workflowName",req.body.apiPublicKey))}
-     else {res.status(200).json(tasks) }
+     else 
+     {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,tasks,req.body.apiPublicKey));
+     }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

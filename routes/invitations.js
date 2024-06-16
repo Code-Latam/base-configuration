@@ -152,6 +152,8 @@ router.post("/invite", async (request, res) => {
        const secretKey = process.env.INVITE_SECRET_KEY ;
        // Data payload to include in the JWT
        const payload = req.body ;
+
+       console.log("PAYLOAD for TOKEN", payload);
        
        // Options for the JWT expires in 5 days
        const options = { expiresIn: '5d' };
@@ -194,7 +196,8 @@ router.post("/invite", async (request, res) => {
          }
 
       const invite = await Invite.findOneAndUpdate(filter, update, options);
-      res.status(200).json(invite);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,invite,req.body.apiPublicKey));
+      return;
        
      } 
     else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this invite to.",req.body.apiPublicKey));}
@@ -230,7 +233,8 @@ router.post("/invite", async (request, res) => {
       const result = verifyToken(req.body.token)
       if (result) 
       {
-         res.status(200).json(result) 
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,result,req.body.apiPublicKey));
+    
       }       
       else 
       { 
@@ -245,7 +249,7 @@ router.post("/invite", async (request, res) => {
 
 
 
-//delete user
+//delete invitation
 router.post("/delete", async (request, res) => {
   const req = await utils.getDecodedBody(request);
 
@@ -319,7 +323,10 @@ router.post("/queryall", async (request, res) => {
     
     const invitations = await Invite.find({ chatbotKey: req.body.chatbotKey });
     if (!invitations) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No invitations found for this workspace",req.body.apiPublicKey))}
-    else {res.status(200).json(invitations) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,invitations,req.body.apiPublicKey));
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

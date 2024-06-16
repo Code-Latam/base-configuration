@@ -158,10 +158,12 @@ router.post("/postman", async (request, res) => {
 
          // Process each item (request or folder)
          await processItems(postmanData.item, req.body.clientNr,req.body.explorerId, collectionName);
-          res.status(200).json('APIs imported successfully');
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,'APIs imported successfully',req.body.apiPublicKey));
+     
        } catch (error) {
          console.error('Error importing APIs:', error);
-         res.status(500).json('Error importing APIs');
+         res.status(500).json(utils.Encryptresponse(req.encryptresponse,'Error importing APIs',req.body.apiPublicKey));
+     
        }
    
  });
@@ -306,16 +308,12 @@ router.post("/openapi", async (request, res) => {
 
       // Process each path and operation
       await processPaths(openApiData.paths, req.body.clientNr, req.body.explorerId, collectionName);
-
-      res.status(200).json('APIs imported successfully');
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse, 'APIs imported successfully', req.body.apiPublicKey));
+    
    } catch (error) {
       console.error('Error importing APIs:', error);
-      res.status(500).json('Error importing APIs');
+      res.status(500).json(utils.Encryptresponse(req.encryptresponse, 'Error importing APIs', req.body.apiPublicKey));
    }
 });
-
-module.exports = router;
-
-
 
 module.exports = router;

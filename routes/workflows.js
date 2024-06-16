@@ -113,8 +113,8 @@ router.post("/register", async (request, res) => {
           });
 
           const link = await newLink.save();
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,workflow,req.body.apiPublicKey));
 
-         res.status(200).json(workflow);
       }
    
     catch (err) {
@@ -331,7 +331,10 @@ router.post("/query", async (request, res) => {
     
     const workflow = await Workflow.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, productName: req.body.productName, name: req.body.name });
     if (!workflow) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No workflow object found for this clientNr, explorerId, productName and name combination",req.body.apiPublicKey))}
-    else {res.status(200).json(workflow) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,workflow,req.body.apiPublicKey));
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -386,7 +389,10 @@ router.post("/queryallgivenproduct", async (request, res) => {
      
      const workflows = await Workflow.find({ clientNr: req.body.clientNr,exploreId: req.body.explorerId, productName: req.body.productName});
      if (!workflows) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No Workflow object found for this clientNr, explorerId and productName combination",req.body.apiPublicKey))}
-     else {res.status(200).json(workflows) }
+     else
+      {
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,workflows,req.body.apiPublicKey));
+      }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -435,7 +441,12 @@ router.post("/queryallgivenproduct", async (request, res) => {
     
     const workflows = await Workflow.find({ clientNr: req.body.clientNr,exploreId: req.body.explorerId});
     if (!workflows) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No Workflow object found for this clientNr, explorerId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(workflows) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,workflows,req.body.apiPublicKey));
+    
+      res.status(200).json(workflows)
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

@@ -419,35 +419,33 @@ router.post("/query", async (request, res) => {
 });
 
 // Get master chatbot
-router.post("/getmaster", async (req, res) => {
+router.post("/getmaster", async (request, res) => {
+  const req = await utils.getDecodedBody(request);
   
   if (!utils.gwokenCorrect(req.body, req.body.gwoken))
   {
-  res.status(401).json("gwoken verification failed. Please check you gwoken calculation.");
+    res.status(401).json(utils.Encryptresponse(req.encryptresponse,"gwoken verification failed. Please check you gwoken calculation.",req.body.apiPublicKey))
   return
   }
   const client = await Client.findOne({ clientNr: req.body.clientNr })
     if (!client)
      {
-      res.status(401).json("client number does not exist");
+      res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
       return
      }  
 
   try {
       const chatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey})
       const { password, updatedAt, ...other } = chatbot._doc;
-      res.status(200).json(other);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,other,req.body.apiPublicKey));
       return
     }
   catch (err) 
   {
-    res.status(500).json("An internal server error ocurred. Please check your fields")
+    res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey));
+    return;
   }
 });
-
-
-
-
 
 
 // Get base information for all chatbots
@@ -717,11 +715,6 @@ router.post("/update", async (request, res) => {
   } );
 
 
-   //just a test in order to see if the backen is working
-router.post("/test", async (req, res) => {
-  res.status(200).json("test is ok. Apis do arrive")
-  }
- );
 
 
  // add documents to chatbot

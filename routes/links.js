@@ -84,7 +84,8 @@ router.post("/register", async (request, res) => {
            links: req.body.links,
          });
          const link = await newLink.save();
-         res.status(200).json(link);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,link,req.body.apiPublicKey));
+   
       }
    
     catch (err) {
@@ -277,7 +278,11 @@ router.post("/query", async (request, res) => {
     
     const links = await Link.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId, workflowName:req.body.workflowName });
     if (!links) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No link object found for this clientNr, explorerId and workflowName combination",req.body.apiPublicKey))}
-    else {res.status(200).json(links) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,links,req.body.apiPublicKey));
+     
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -348,8 +353,7 @@ router.post("/querysourcesandtargets", async (request, res) => {
       sources.push(obj.source);
       targets.push(obj.target);
       });
-
-      res.status(200).json({sources: sources, targets: targets}) 
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,{sources: sources, targets: targets},req.body.apiPublicKey)); 
     }
     }
     catch (err) {

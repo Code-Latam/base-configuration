@@ -80,7 +80,8 @@ router.post("/register", async (request, res) => {
            yaml: req.body.yaml,
          });
          const explorer = await newExplorer.save();
-         res.status(200).json(explorer);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,explorer,req.body.apiPublicKey));
+
       }
    
     catch (err) {
@@ -250,7 +251,9 @@ router.post("/query", async (request, res) => {
     
     const explorers = await Explorer.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId });
     if (!explorers) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No explorer object found for this clientNr and explorerId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(explorers) }
+    else {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,explorers,req.body.apiPublicKey));
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -293,7 +296,10 @@ router.post("/queryall", async (request, res) => {
      
      const explorers = await Explorer.find({ clientNr: req.body.clientNr});
      if (!explorers) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No explorer object found for this clientNr",req.body.apiPublicKey))}
-     else {res.status(200).json(explorers) }
+     else 
+     {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,explorers,req.body.apiPublicKey));
+    }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

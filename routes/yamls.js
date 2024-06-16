@@ -58,7 +58,7 @@ router.post("/register", async (request, res) => {
            yaml: req.body.yaml,
          });
          const yaml = await newYaml.save();
-         res.status(200).json(yaml);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,yaml,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -191,7 +191,10 @@ router.post("/query", async (request, res) => {
     
     const yaml = await Yaml.findOne({ yamlId: req.body.yamlId });
     if (!yaml) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No Yaml object found for this yamlId",req.body.apiPublicKey))}
-    else {res.status(200).json(yaml) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,yaml,req.body.apiPublicKey));
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

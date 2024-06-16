@@ -70,7 +70,7 @@ router.post("/registercustom", async (request, res) => {
      
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
       const customUserApi = await CustomUserApi.findOneAndUpdate(query, myCustomUserApiData, options);
-      res.status(200).json(customUserApi);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,customUserApi,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -139,7 +139,7 @@ router.post("/registercustom", async (request, res) => {
      
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
       const customUserApiResult = await CustomUserApiResult.findOneAndUpdate(query, myCustomUserApiResultData, options);
-      res.status(200).json(customUserApiResult);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,customUserApiResult,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -205,7 +205,7 @@ router.post("/registercustom", async (request, res) => {
         res.status(404).json(utils.Encryptresponse(req.encryptresponse, "API not found, There is no custom version of this APi stored", req.body.apiPublicKey));
         return;
       }
-      res.status(200).json(customerUserApi);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse, customerUserApi, req.body.apiPublicKey));
       return;
 
    }
@@ -287,7 +287,7 @@ router.post("/registercustom", async (request, res) => {
             parametersDescription: req.body.parametersDescription
          });
          const api = await newApi.save();
-         res.status(200).json(api);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse, api, req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -365,7 +365,8 @@ router.post("/registercustom", async (request, res) => {
       const newApi = new Api(apiToSave);
          
          const api = await newApi.save();
-         res.status(200).json(api);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,api,req.body.apiPublicKey));
+     
       }
    
     catch (err) {
@@ -511,7 +512,7 @@ router.post("/changename", async (request, res) => {
    } );
    
 
-//delete task
+//delete Api
 router.post("/delete", async (request, res) => {
   const req = await utils.getDecodedBody(request);
 
@@ -630,20 +631,20 @@ router.post("/query", async (request, res) => {
          if (customApi)
          { 
             console.log("returned custom");
-            res.status(200).json(customApi)
+            res.status(200).json(utils.Encryptresponse(req.encryptresponse,customApi,req.body.apiPublicKey));
             return
          }
          else
          {
             // no custom api found
             console.log('NOCUSTOMAPI', api);
-            res.status(200).json(api);
+            res.status(200).json(utils.Encryptresponse(req.encryptresponse,api,req.body.apiPublicKey));
             return
          }
       }
       else
       {
-         res.status(200).json(api)
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,api,req.body.apiPublicKey));
          return
       } 
     }
@@ -695,7 +696,9 @@ router.post("/queryall", async (request, res) => {
      
      const Apis = await Api.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId});
      if (!Apis) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No API objects found for this clientNr",req.body.apiPublicKey))}
-     else {res.status(200).json(Apis) }
+     else {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,Apis,req.body.apiPublicKey))
+          }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

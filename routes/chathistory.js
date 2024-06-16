@@ -65,7 +65,7 @@ try {
   
       //save cand respond
       const chathistoryItem = await newChathistory.save();
-      res.status(200).json(chathistoryItem);
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,chathistoryItem,req.body.apiPublicKey))
     } 
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

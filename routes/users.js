@@ -160,7 +160,10 @@ router.post("/query", async (request, res) => {
     
     const users = await User.findOne({ clientNr: req.body.clientNr, chatbotKey: req.body.chatbotKey, email: req.body.email });
     if (!users) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No user found for this chatbot and name combination",req.body.apiPublicKey))}
-    else {res.status(200).json(users) }
+    else
+     {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,users,req.body.apiPublicKey));
+     }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -215,6 +218,7 @@ router.post("/explorers", async (request, res) => {
       const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email });
       if (!user) {
           res.status(404).json(utils.Encryptresponse(req.encryptresponse, "No user found for this chatbot and email combination", req.body.apiPublicKey));
+          return
       } else {
       
           const explorersNameList = user.explorers.map(explorer => explorer.name);
@@ -229,12 +233,14 @@ router.post("/explorers", async (request, res) => {
                   console.error(`Error fetching explorer with name ${name}:`, error);
               }
           }
-          res.status(200).json(result);
+          res.status(200).json(utils.Encryptresponse(req.encryptresponse, result, req.body.apiPublicKey));
+          return
       }
    }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
-   }
+       return
+      }
  });
  
 
@@ -278,7 +284,11 @@ router.post("/queryall", async (request, res) => {
     
     const users = await User.find({ chatbotKey: req.body.chatbotKey });
     if (!users) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No users found for this chatbot"),req.body.apiPublicKey)}
-    else {res.status(200).json(users) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,users,req.body.apiPublicKey));
+      return;
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

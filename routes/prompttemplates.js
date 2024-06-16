@@ -58,7 +58,7 @@ router.post("/register", async (request, res) => {
            promptTemplate: req.body.promptTemplate
          });
          const prompttemplate = await newPromptTemplate.save();
-         res.status(200).json(prompttemplate);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,prompttemplate,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -191,7 +191,10 @@ router.post("/query", async (request, res) => {
     
     const prompttemplate = await PromptTemplate.findOne({ promptId: req.body.promptId });
     if (!prompttemplate) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No prompt template object found for this promptId",req.body.apiPublicKey))}
-    else {res.status(200).json(prompttemplate) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,prompttemplate,req.body.apiPublicKey));
+     }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

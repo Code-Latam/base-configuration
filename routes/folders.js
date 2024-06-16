@@ -59,7 +59,8 @@ router.post("/register", async (request, res) => {
            items: req.body.items
          });
          const folder = await newFolder.save();
-         res.status(200).json(folder);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,folder,req.body.apiPublicKey));
+
       }
    
     catch (err) {
@@ -210,7 +211,11 @@ router.post("/query", async (request, res) => {
     
     const folders = await Folder.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId}, { _id: 0 });
     if (!folders) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No folder object found for this clientNr and explorerId combination",req.body.apiPublicKey))}
-    else {res.status(200).json(folders) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,folders,req.body.apiPublicKey));
+      
+    }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

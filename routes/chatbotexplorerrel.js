@@ -56,9 +56,13 @@ router.post("/query", async (request, res) => {
     if (!chatbotexplorerrel) 
     {
       console.log("FAIL");
-      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot explorer relation object found for this clientNr and explorerId combination",req.body.apiPublicKey))
+      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot explorer relation object found for this clientNr and explorerId combination",req.body.apiPublicKey));
    }
-    else {res.status(200).json(chatbotexplorerrel) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,chatbotexplorerrel,req.body.apiPublicKey))
+      
+   }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))

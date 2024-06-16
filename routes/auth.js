@@ -67,8 +67,9 @@ router.post("/register", async (request, res) => {
           groups: req.body.groups,
           explorers: req.body.explorers,
         });
+        console.log("EXPLORERS", req.body.explorers);
         const user = await newUser.save();
-        res.status(200).json(user);
+        res.status(200).json(utils.Encryptresponse(req.encryptresponse,user,req.body.apiPublicKey));
       
     } 
    else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this user to.",req.body.apiPublicKey));}

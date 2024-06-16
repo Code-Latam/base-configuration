@@ -94,7 +94,7 @@ router.post("/register", async (request, res) => {
            status: req.body.status
          });
          const product = await newProduct.save();
-         res.status(200).json(product);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,product,req.body.apiPublicKey));
       }
    
     catch (err) {
@@ -297,7 +297,10 @@ router.post("/query", async (request, res) => {
     
     const product = await Product.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId,productName: req.body.productName });
     if (!product) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No product object found for this clientNr, explorerId and productName combination",req.body.apiPublicKey))}
-    else {res.status(200).json(product) }
+    else 
+    {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,product,req.body.apiPublicKey));
+     }
     }
     catch (err) {
       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -346,7 +349,10 @@ router.post("/queryall", async (request, res) => {
      
      const products = await Product.find({ clientNr: req.body.clientNr, explorerId: req.body.explorerId});
      if (!products) {res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No product object found for this clientNr",req.body.apiPublicKey))}
-     else {res.status(200).json(products) }
+     else 
+     {
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse,products,req.body.apiPublicKey)); 
+     }
      }
      catch (err) {
        res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An internal server error ocurred. Please check your fields",req.body.apiPublicKey))
@@ -442,10 +448,10 @@ router.post("/gettree", async (request, res) => {
 
      
          // Send the formatted data as a JSON response
-         res.json(result);
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,result,req.body.apiPublicKey));
        } catch (err) {
          console.error(err);
-         res.status(500).json({ error: 'Internal Server Error' });
+         res.status(500).json(utils.Encryptresponse(req.encryptresponse,{ error: 'Internal Server Error' },req.body.apiPublicKey));
        }
 
 
