@@ -7,12 +7,13 @@ const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const Explorer = require("../models/Explorer");
 
+
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
 
 
-async function sendEmail(toEmail, token, clientNr, url, chatbotKey) {
+async function sendEmailNewUser(toEmail, token, clientNr, url, chatbotKey) {
    // Create a transporter object using the default SMTP transport
    let transporter = nodemailer.createTransport({
        host: "smtp.titan.email",  // Replace with your SMTP host
@@ -139,14 +140,36 @@ router.post("/invite", async (request, res) => {
         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
         return
        } 
-       
-       const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.email })
+      
+      const user = await User.findOne({ chatbotKey: req.body.chatbotKey, email: req.body.toEmail })
+      console.log ("user payload",{ chatbotKey: req.body.chatbotKey, email: req.body.toEmail } )
+      console.log("USER", user);
       if (user)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"A user with this email already exists. Can't be invited again",req.body.apiPublicKey));
-        return
-       } 
+         // user is already known in client Studio
+         // add explorer to explorer array of this user
+         // check if explorer already exists
+         const exists = user.explorers.some(explorer => explorer.name === req.body.explorers[0].name);
+         console.log("EXPLORER EXISTS?", exists)
+         if (exists)
+            {
+            res.status(415).json(utils.Encryptresponse(req.encryptresponse,"Invitee exists and is already a member this workspace. Please edit the user roles if needed.",req.body.apiPublicKey));
+            return
+            }
+         user.explorers.push(req.body.explorers[0]);
+         const resultUpdate = await User.updateOne(
+            { _id: user._id },
+            { $set: { explorers: user.explorers } }
+            );
+            if (resultUpdate.modifiedCount > 0) {
+               res.status(200).json(utils.Encryptresponse(req.encryptresponse,'Invitee was added to the workspace' ,req.body.apiPublicKey));
+               return
+         } else {
+            res.status(416).json(utils.Encryptresponse(req.encryptresponse,"Invitee exists, but could not be added to workspace",req.body.apiPublicKey));
+            return
+         }
 
+       } 
        
 
        const secretKey = process.env.INVITE_SECRET_KEY ;
@@ -164,7 +187,7 @@ router.post("/invite", async (request, res) => {
  
    try 
    {
- 
+     // Create a new user and send invite
      var chatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey, clientNr: req.body.clientNr })
      if (chatbot) // we found a chatbot so we can create an invite for it
      {
@@ -187,7 +210,7 @@ router.post("/invite", async (request, res) => {
        };
        
       
-       const sendresult = await sendEmail(req.body.toEmail, token, req.body.clientNr, req.body.url, req.body.chatbotKey);
+       const sendresult = await sendEmailNewUser(req.body.toEmail, token, req.body.clientNr, req.body.url, req.body.chatbotKey);
        if (!sendresult)
          {
             res.status(403).json(utils.Encryptresponse(req.encryptresponse,"Failed to send invite email.",req.body.apiPublicKey))

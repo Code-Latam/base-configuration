@@ -270,14 +270,14 @@ router.post("/query", async (request, res) => {
 
      if (!req.body.explorerId)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      res.status(413).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
       return
      } 
 
 
      if (!req.body.productName)
      {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"productName is a required field",req.body.apiPublicKey));
+      res.status(414).json(utils.Encryptresponse(req.encryptresponse,"productName is a required field",req.body.apiPublicKey));
       return
      } 
 

@@ -330,6 +330,19 @@ router.post("/register", async (request, res) => {
       );
 
 
+      // Update the admin user so he will also have access to that workspace
+
+      await User.updateMany(
+        { username: "Admin", chatbotKey: req.body.chatbotKey },  // Query: matches documents based on username "Admin" and chatbotKey
+        { $push: { explorers: { 
+            name: req.body.explorerId, 
+            designer: false, 
+            owner: true, 
+            reader: false 
+          } } }  // Update: pushes a new object into the explorers array
+      );
+
+
         }
 
         catch(err)
@@ -385,7 +398,7 @@ router.post("/register", async (request, res) => {
    return
  });
 
-//update explorer
+
 
 
 //delete workspace
