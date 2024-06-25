@@ -226,13 +226,13 @@ router.post("/registercustom", async (request, res) => {
  
    if (!req.endtoendPass)
       {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       res.status(420).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
        return
       }  
  
    if (!req.gwokenPass)
       {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       res.status(402).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
        return
       }  
  
@@ -245,23 +245,23 @@ router.post("/registercustom", async (request, res) => {
 
       if (!req.body.explorerId)
       {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+       res.status(413).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
        return
       }  
  
 
    if (!req.body.name)
       {
-       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
+       res.status(414).json(utils.Encryptresponse(req.encryptresponse,"name is a required field",req.body.apiPublicKey));
        return
       } 
 
       
        
-      const myapi = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name })
+      const myapi = await Api.findOne({ clientNr: req.body.clientNr, name: req.body.name, explorerId: req.body.explorerId })
       if (myapi)
        {
-        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"An api object with this name already exists for this clientNr and name",req.body.apiPublicKey));
+        res.status(415).json(utils.Encryptresponse(req.encryptresponse,"An api object with this name already exists for this clientNr and name",req.body.apiPublicKey));
         return
        } 
  

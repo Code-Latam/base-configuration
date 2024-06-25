@@ -318,7 +318,9 @@ router.post("/register", async (request, res) => {
         }
 // add explorerId to array of explorers
         try {
-
+       // if user is not the Admin add the explorer to him
+       if (user.username !== "Admin")
+        {
         await User.findOneAndUpdate(
           { chatbotKey: req.body.chatbotKey, email: req.body.email },  // Query: matches documents based on chatbotKey only
           { $push: { explorers: { 
@@ -327,10 +329,10 @@ router.post("/register", async (request, res) => {
               owner: true, 
               reader: false 
             } } }  // Update: pushes a new object into the explorers array
-      );
+          );
+        } 
 
-
-      // Update the admin user so he will also have access to that workspace
+      // Update the admin user  will also have access to that workspace
 
       await User.updateMany(
         { username: "Admin", chatbotKey: req.body.chatbotKey },  // Query: matches documents based on username "Admin" and chatbotKey

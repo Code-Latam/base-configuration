@@ -9,6 +9,16 @@ const Product = require("../models/Product");
 
 // register Task
 
+function generateRandomString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 router.post("/register", async (request, res) => {
    const req = await utils.getDecodedBody(request);
  
@@ -862,6 +872,7 @@ router.post("/queryonegraph", async (request, res) => {
 });
 
 
+
 router.post("/cloneworkflow", async (request, res) => {
 
   const req = await utils.getDecodedBody(request);
@@ -968,6 +979,10 @@ router.post("/cloneworkflow", async (request, res) => {
     
         const savedClonedWorkflow = await clonedWorkflow.save();
     
+        // Generate a random string to use for the cloned tasks
+        
+        const myRandomString = generateRandomString(7);
+
         // Find tasks associated with the original workflow
         const originalTasks = await Task.find({ clientNr, explorerId, workflowName: name });
     
@@ -977,7 +992,7 @@ router.post("/cloneworkflow", async (request, res) => {
             clientNr: originalTask.clientNr,
             explorerId: originalTask.explorerId,
             workflowName: savedClonedWorkflow.name,
-            taskId: "CLONE_" + originalTask.taskId,
+            taskId: "CLONE_" + myRandomString + originalTask.taskId,
             name: originalTask.name,
             taskType: originalTask.taskType,
             thirdparty: originalTask.thirdparty,
@@ -999,8 +1014,8 @@ router.post("/cloneworkflow", async (request, res) => {
 
         const clonedLinks = originalLink.links.map(link => ({
           ...link,
-          source: `CLONE_${link.source}`,
-          target: `CLONE_${link.target}`
+          source: `CLONE_${myRandomString}${link.source}`,
+          target: `CLONE_${myRandomString}${link.target}`
         }));
         
 
