@@ -34,6 +34,7 @@ const linkRoute = require("./routes/links");
 const apiRoute = require("./routes/apis");
 const folderRoute = require("./routes/folders");
 const apiimportRoute = require("./routes/apiimport");
+const publicsiteRoute = require("./routes/publicsite");
 
 const invitationRoute = require("./routes/invitations");
 
@@ -102,6 +103,7 @@ app.use("/api/folder", folderRoute);
 app.use("/api/apiimport", apiimportRoute);
 
 app.use("/api/invitation", invitationRoute);
+app.use("/api/publicsite", publicsiteRoute);
 
 
 const port = process.env.PORT || 8800

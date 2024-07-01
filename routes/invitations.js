@@ -1,11 +1,13 @@
 const Client = require("../models/Client");
 const Chatbot = require("../models/Chatbot");
 const Invite = require("../models/Invitation");
+const PublicEmail = require("../models/PublicEmail");
 const User = require("../models/User");
 const utils = require("../utils/utils.js");
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const Explorer = require("../models/Explorer");
+const ChatbotExplorerRel = require("../models/ChatbotExplorerRel");
 
 
 const jwt = require('jsonwebtoken');
@@ -233,35 +235,24 @@ router.post("/invite", async (request, res) => {
  });
 
  router.post("/verifytoken", async (request, res) => {
-   const req = await utils.getDecodedBody(request);
-   if (!req.endtoendPass)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
-       return
-      }  
- 
-   if (!req.gwokenPass)
-      {
-       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
-       return
-      }  
+   const req = request;
  
  
    if (!req.body.token)
       {
-      res.status(412).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+      res.status(413).json("Token is a required field");
       return
       }  
 
       const result = verifyToken(req.body.token)
       if (result) 
       {
-         res.status(200).json(utils.Encryptresponse(req.encryptresponse,result,req.body.apiPublicKey));
+         res.status(200).json(result);
     
       }       
       else 
       { 
-         res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Token not valid or expired",req.body.apiPublicKey));
+         res.status(401).json("Token not valid or expired");
       }
 
    
@@ -357,7 +348,345 @@ router.post("/queryall", async (request, res) => {
 });
 
 
+router.post("/setPublicInviteStatus", async (request, res) => {
+   const req = await utils.getDecodedBody(request);
+ 
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(402).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
 
+   if (!req.body.clientNr)
+      {
+         res.status(403).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+         return
+      }  
+
+   if (!req.body.explorerId)
+   {
+      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+   }  
+
+   if (!req.body.hasOwnProperty('publicInvite')) {
+      res.status(405).json(utils.Encryptresponse(req.encryptresponse, "publicInvite is a required field", req.body.apiPublicKey));
+      return;
+    }
+    
+      const result = await ChatbotExplorerRel.updateOne(
+         { clientNr: req.body.clientNr, explorerId: req.body.explorerId },
+         { $set: { publicInvite: req.body.publicInvite } }
+       );
+       
+       if (result.nModified === 0) {
+         // No document was updated
+         res.status(412).json(utils.Encryptresponse(req.encryptresponse,"No workspace found with the given cientNr and explorerId",req.body.apiPublicKey));
+         return
+       } else {
+         // Document was updated
+         res.status(200).json(utils.Encryptresponse(req.encryptresponse,"Public Invite Status updated!",req.body.apiPublicKey));
+         return
+       }
+ });
+
+ router.post("/GetPublicInviteStatus", async (request, res) => {
+   const req = await utils.getDecodedBody(request);
+ 
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(402).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
+
+   if (!req.body.clientNr)
+      {
+         res.status(403).json(utils.Encryptresponse(req.encryptresponse,"ClientNr is a required field",req.body.apiPublicKey));
+         return
+      }  
+
+   if (!req.body.explorerId)
+   {
+      res.status(404).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+      return
+   }  
+  
+   try {
+   const result = await ChatbotExplorerRel.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId });
+   res.status(200).json(utils.Encryptresponse(req.encryptresponse,result,req.body.apiPublicKey));
+   return
+   }
+   catch(error)
+   {
+   res.status(405).json(utils.Encryptresponse(req.encryptresponse,"Could not query public invite status",req.body.apiPublicKey));
+   return
+   }
+        
+ });
+
+ router.post("/generate-token", async (request, res) => {
+
+   const req = await utils.getDecodedBody(request);
+  
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   const secretKey = process.env.INVITE_SECRET_KEY ;
+   // Data payload to include in the JWT
+   const payload = req.body ;
+ 
+   console.log("PAYLOAD for TOKEN", payload);
+   
+   // Options for the JWT does not expire
+   const options = { };
+   
+   // Generate a JWT
+   const token = jwt.sign(payload, secretKey, options);
+   console.log(token);
+   
+   res.status(200).json(utils.Encryptresponse(req.encryptresponse,token,req.body.apiPublicKey));
+   return
+      
+ });
+
+
+
+ router.post("/publiclogin", async (request, res) => {
+
+   const req = request;
+ 
+  
+ 
+   if (!req.body.clientNr)
+      {
+       res.status(412).json("ClientNr is a required field");
+       return
+      }  
+   if (!req.body.explorerId)
+      {
+       res.status(413).json("explorerId is a required field");
+       return
+      }   
+
+   if (!req.body.email)
+      {
+         res.status(413).json("email is a required field");
+         return
+      }   
+       
+ 
+   if (!req.body.chatbotKey)
+      {
+       res.status(414).json("chatbotKey is a required field");
+       return
+      } 
+
+   //check if workspace exist
+
+   try {
+      const explorerRel = await ChatbotExplorerRel.findOne({ clientNr: req.body.clientNr, explorerId: req.body.explorerId });
+      if (!explorerRel) {
+          res.status(415).json("workspace does not exist");
+          return;
+      }
+      // check if workspace has public access
+      if (!explorerRel.publicInvite)
+         {
+            res.status(416).json("workspace does not offer access for the public");
+            return
+         }
+
+      // Proceed with the rest of your code if explorerRel is found
+  } catch (error) {
+         res.status(417).json("workspace does not exist");
+         return;
+  }
+
+   
+
+   // check if public user exists
+
+
+ 
+   try {
+ 
+ 
+     // find the user based on the email and the chatbotkey
+     const user = await User.findOne({ $and: [ {chatbotKey: req.body.chatbotKey }, { email: req.body.email }] });
+     if (!user)
+     {
+     res.status(418).json("Public User not found.");
+     return
+      }
+
+     const newuser =  user.toObject();
+     newuser.explorerId = req.body.explorerId;
+     newuser.clientNr = req.body.clientNr;
+     res.status(200).json(newuser)
+         
+   } catch (err) {
+     res.status(500).json("An Internal unspecified error occured");
+   }
+ });
+
+
+ router.post("/registerpublicuser", async (request, res) => {
+   const req = await utils.getDecodedBody(request);
+ 
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+ 
+   if (!req.body.clientNr)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"clientNr is a required field",req.body.apiPublicKey));
+       return
+      }  
+
+   if (!req.body.explorerId)
+      {
+         res.status(412).json(utils.Encryptresponse(req.encryptresponse,"explorerId is a required field",req.body.apiPublicKey));
+         return
+      }  
+ 
+      if (!req.body.chatbotKey)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"chatbotKey is a required field",req.body.apiPublicKey));
+       return
+      } 
+      const client = await Client.findOne({ clientNr: req.body.clientNr })
+      if (!client)
+       {
+        res.status(401).json(utils.Encryptresponse(req.encryptresponse,"client number does not exist",req.body.apiPublicKey));
+        return
+       } 
+       
+       
+ 
+   try 
+   {
+     //generate new password
+     const salt = await bcrypt.genSalt(10);
+     const hashedPassword = await bcrypt.hash("mybabybaby", salt);
+ 
+     var chatbot = await Chatbot.findOne({ chatbotKey: req.body.chatbotKey })
+     console.log(chatbot);
+     if (chatbot) // we found a chatbot so we can create a user for it
+     {
+      const filter = { email: req.body.email, chatbotKey: req.body.chatbotKey  }; // Assuming email is unique for each user
+      const update = {
+          email: req.body.email,
+          chatbotKey: req.body.chatbotKey,
+          username: req.body.username,
+          password: hashedPassword,
+          groups: req.body.groups,
+          explorers: req.body.explorers,
+      };
+      const options = { new: true, upsert: true }; // 'new: true' returns the updated document
+  
+      const user = await User.findOneAndUpdate(filter, update, options);
+
+      const myuser = user.toObject();
+      myuser.explorerId = req.body.explorerId;
+      myuser.clientNr = req.body.clientNr;
+
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse, myuser, req.body.apiPublicKey));
+      return;
+     } 
+    else { res.status(404).json(utils.Encryptresponse(req.encryptresponse,"No chatbot found to add this user to.",req.body.apiPublicKey));}
+   } 
+   
+    catch (err) {
+       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
+     }
+   
+ });
+
+
+ router.post("/registerpublicemail", async (request, res) => {
+   const req = await utils.getDecodedBody(request);
+ 
+   if (!req.endtoendPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"End to end encryption required or end to end encryption not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+   if (!req.gwokenPass)
+      {
+       res.status(401).json(utils.Encryptresponse(req.encryptresponse,"Gwoken required or GWOKEN calculation not correct",req.body.apiPublicKey));
+       return
+      }  
+ 
+ 
+   if (!req.body.clientNr)
+      {
+       res.status(412).json(utils.Encryptresponse(req.encryptresponse,"clientNr is a required field",req.body.apiPublicKey));
+       return
+      }  
+
+   if (!req.body.email)
+      {
+         res.status(412).json(utils.Encryptresponse(req.encryptresponse,"email is a required field",req.body.apiPublicKey));
+         return
+      }  
+ 
+      
+       
+ 
+   try 
+   {
+     //generate new password
+     
+      const filter = { email: req.body.email, clientNr: req.body.clientNr  }; 
+      const update = {
+          email: req.body.email,
+          clientNr: req.body.clientNr,
+      };
+      const options = { new: true, upsert: true }; // 'new: true' returns the updated document
+  
+      const myemail = await PublicEmail.findOneAndUpdate(filter, update, options);
+
+      res.status(200).json(utils.Encryptresponse(req.encryptresponse, "EMAIL SAVED", req.body.apiPublicKey));
+      return;
+     } 
+   
+    catch (err) {
+       res.status(500).json(utils.Encryptresponse(req.encryptresponse,"An Internal Server error ocurred",req.body.apiPublicKey));
+     }
+   
+ });
+ 
 
 
 module.exports = router;

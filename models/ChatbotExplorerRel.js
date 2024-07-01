@@ -20,6 +20,10 @@ const ChatbotExplorerRelSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    publicInvite: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true }
 );
